@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useGetProductDetail } from "@/src/lib/api/product/getProductDetail";
+import { useGetProductDetail } from "@/src/lib/api/product/get-product-detail";
 import { useParams } from "next/navigation";
 
 export default function ProductDetail() {
@@ -33,14 +33,14 @@ export default function ProductDetail() {
 
   if (errorProduct || !product) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh] p-5">
+      <div className="flex justify-center items-center min-h-[60vh]">
         <p className="text-gray-500">Product not found or failed to load.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-5">
+    <div className="max-w-3xl mx-auto mt-10">
       <Card className="overflow-hidden shadow-md border border-gray-100">
         <CardHeader className="bg-gray-50 pb-4">
           <CardTitle className="text-2xl font-semibold">

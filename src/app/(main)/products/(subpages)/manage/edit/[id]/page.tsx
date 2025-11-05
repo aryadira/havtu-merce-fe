@@ -12,11 +12,14 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useGetProductDetail } from "@/src/lib/api/product/getProductDetail";
-import { useUpdateProduct } from "@/src/lib/api/product/updateProduct";
+import { useGetProductDetail } from "@/src/lib/api/product/get-product-detail";
+import { useUpdateProduct } from "@/src/lib/api/product/update-product";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProductSchema, type CreateProductSchema } from "../../../schema";
+import {
+  createProductSchema,
+  type CreateProductSchema,
+} from "../../../../schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -65,10 +68,10 @@ export default function EditProductPage() {
     });
   };
 
-  if (loadProduct) return <p className="p-5">Loading...</p>;
+  if (loadProduct) return <p>Loading...</p>;
 
   return (
-    <main className="w-full p-5">
+    <main className="w-full">
       <h1 className="text-2xl">Edit Product</h1>
       <div className="mt-2">
         <Form {...form}>

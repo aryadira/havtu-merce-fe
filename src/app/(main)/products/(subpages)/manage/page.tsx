@@ -47,12 +47,11 @@ import {
 import {
   ProductItemResponse,
   useGetProducts,
-} from "@/src/lib/api/product/getProducts";
+} from "@/src/lib/api/product/get-products";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useDeleteProduct } from "@/src/lib/api/product/deleteProduct";
+import { useDeleteProduct } from "@/src/lib/api/product/delete-product";
 import { toast } from "sonner";
-import { useGetProductDetail } from "@/src/lib/api/product/getProductDetail";
 
 interface ProductDetailActionsProps {
   productId: string;
@@ -93,7 +92,7 @@ export default function ProductList() {
   });
 
   return (
-    <div className="w-full p-5">
+    <div className="w-full">
       <h1 className="text-2xl">Products</h1>
       <div className="flex items-center py-4 gap-2">
         <Input
@@ -130,7 +129,7 @@ export default function ProductList() {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Link href="/products/create">
+        <Link href="/products/manage/reate">
           <Button className="cursor-pointer">Add Product</Button>
         </Link>
       </div>
@@ -339,13 +338,13 @@ export function ProductActions({ productId }: ProductDetailActionsProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => router.push(`/products/${productId}`)}
+          onClick={() => router.push(`/products/manage/${productId}`)}
         >
           View Details
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => router.push(`/products/edit/${productId}`)}
+          onClick={() => router.push(`/products/manage/edit/${productId}`)}
         >
           Edit
         </DropdownMenuItem>

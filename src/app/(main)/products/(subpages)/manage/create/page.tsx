@@ -12,10 +12,10 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useCreateProduct } from "@/src/lib/api/product/createProduct";
+import { useCreateProduct } from "@/src/lib/api/product/create-product";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProductSchema, type CreateProductSchema } from "../../schema";
+import { createProductSchema, type CreateProductSchema } from "../../../schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
@@ -42,6 +42,10 @@ export default function CreateProduct() {
         form.reset();
         router.push("/products");
       },
+      onError: (error: any) => {
+        const { message } = error?.response?.data;
+        toast.error(message);
+      },
     },
   });
 
@@ -49,10 +53,10 @@ export default function CreateProduct() {
     createProduct(data);
   };
 
-  if (isCreating) return <p className="p-5">Loading...</p>;
+  if (isCreating) return <p>Loading...</p>;
 
   return (
-    <main className="w-full p-5">
+    <main className="w-full">
       <h1 className="text-2xl">Create Product</h1>
       <div id="create-product-form" className="mt-2">
         <Form {...form}>

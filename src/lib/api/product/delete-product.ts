@@ -1,7 +1,7 @@
 import api from "@/src/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { MutationConfig, queryClient } from "../../react-query";
-import { getProductsQueryKey } from "./getProducts";
+import { getProductsQueryKey } from "./get-products";
 
 export const deleteProduct = async (id: string) => {
   const response = await api.delete(`/products/${id}`);
