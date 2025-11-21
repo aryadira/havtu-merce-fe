@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
-// 🔓 Route publik (tidak perlu login)
-const PUBLIC_PATHS = ["/", "/login", "/register", "/about", "/contact"];
+// Public routes (exact match)
+const PUBLIC_PATHS = new Set(["/login", "/register", "/unauthorized"]);
 
-// 🔐 Route berbasis role
-const ROLE_ACCESS: { [key: string]: string[] } = {
+// Role-based routes
+const ROLE_ACCESS: Record<string, string[]> = {
   user: ["/products/shop", "/cart", "/orders"],
   seller: ["/products/manage", "/orders/seller"],
-  admin: ["/products/access", "/dashboard/admin"],
+  admin: ["products/manage", "/products/access", "/dashboard/admin"],
 };
 
 export async function proxy(req: NextRequest) {
@@ -17,55 +17,51 @@ export async function proxy(req: NextRequest) {
   const next = NextResponse.next();
   const token = req.cookies.get("token")?.value;
 
-  // Urls
   const loginUrl = new URL("/login", req.url);
   const unauthorizedUrl = new URL("/unauthorized", req.url);
 
-  // 🟢 1. Cek apakah route termasuk PUBLIC_PATHS
-  const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+  // allow homepage as public
+  const isPublicRoute = pathname === "/" || PUBLIC_PATHS.has(pathname);
 
-  if (isPublic) {
-    // Kalau route publik, lewati semua pemeriksaan
-    return next;
-  }
+  // 1. Public route → skip auth
+  if (isPublicRoute) return next;
 
-  // 🔴 2. Kalau tidak publik tapi tidak ada token → redirect login
+  // 2. Non-public but no token → redirect
   if (!token) {
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 🔒 3. Kalau ada token, cek role dan akses
-  try {
-    const decoded: any = jwt.decode(token);
-    const role = decoded?.role;
+  // Decode token (safely)
+  const decoded: any = jwt.decode(token);
+  const role = decoded?.role;
 
-    console.log("Decoded JWT:", decoded); // 🔍 lihat isi token kamu
-
-    // Jika route tidak termasuk roleAccess mana pun → izinkan
-    const allAllowedPaths = Object.values(ROLE_ACCESS).flat();
-    const isProtectedRoute = allAllowedPaths.some((path) =>
-      pathname.startsWith(path)
-    );
-
-    // Kalau bukan protected route, semua role boleh akses
-    if (!isProtectedRoute) return next;
-
-    // Kalau route protected, cek apakah role punya akses
-    const allowedPaths = ROLE_ACCESS[role] || [];
-    const isAllowed = allowedPaths.some((path) => pathname.startsWith(path));
-
-    if (!isAllowed) {
-      return NextResponse.redirect(unauthorizedUrl);
-    }
-
-    return next;
-  } catch (error) {
-    console.error("JWT decode error:", error);
+  // If decode fails → force login
+  if (!role) {
     return NextResponse.redirect(loginUrl);
   }
+
+  // Protected route check
+  const allProtectedPaths = Object.values(ROLE_ACCESS).flat();
+  const isProtectedRoute = allProtectedPaths.some((p) =>
+    pathname.startsWith(p)
+  );
+
+  // If not protected → allow
+  if (!isProtectedRoute) return next;
+
+  // Check role access
+  const allowedPaths = ROLE_ACCESS[role] || [];
+  const hasAccess = allowedPaths.some((p) => pathname.startsWith(p));
+
+  if (!hasAccess) {
+    return NextResponse.redirect(unauthorizedUrl);
+  }
+
+  return next;
 }
 
+// Avoid running on assets & API
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$|favicon.ico).*)"],
 };

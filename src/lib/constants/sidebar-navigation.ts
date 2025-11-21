@@ -8,7 +8,7 @@ export const SIDEBAR_NAVIGATIONS = [
   },
   {
     title: "Manage Products",
-    url: "/products",
+    url: "/products/manage",
     icon: Inbox,
   },
   {

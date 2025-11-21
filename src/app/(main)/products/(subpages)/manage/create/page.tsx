@@ -12,7 +12,7 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useCreateProduct } from "@/src/lib/api/product/create-product";
+import { useCreateProduct } from "@/src/lib/api/product/manage/create-product.manage";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createProductSchema, type CreateProductSchema } from "../../../schema";
@@ -25,10 +25,7 @@ export default function CreateProduct() {
   const form = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema) as Resolver<CreateProductSchema>,
     defaultValues: {
-      user_id: "51298ffa-70f7-4529-aaec-d5c7088f6039",
       name: "",
-      price: 0,
-      stock: 0,
       description: "",
       image_url: "",
       is_active: true,
@@ -40,7 +37,7 @@ export default function CreateProduct() {
       onSuccess: () => {
         toast.success("Product created.");
         form.reset();
-        router.push("/products");
+        router.push("/products/manage");
       },
       onError: (error: any) => {
         const { message } = error?.response?.data;

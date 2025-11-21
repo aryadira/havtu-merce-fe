@@ -1,7 +1,7 @@
 import api from "@/src/lib/axios";
 import { useMutation } from "@tanstack/react-query";
-import { MutationConfig, queryClient } from "../../react-query";
-import { getProductsQueryKey } from "./get-products";
+import { MutationConfig, queryClient } from "../../../react-query";
+import { getProductsQueryKey } from "./get-products.manage";
 
 export const deleteProduct = async (id: string) => {
   const response = await api.delete(`/products/${id}`);
@@ -12,13 +12,15 @@ interface UseDeleteProductParams {
   mutationConfig?: MutationConfig<typeof deleteProduct>;
 }
 
+export const getDeleteProductQueryKey = () => ["delete-products"];
+
 export const useDeleteProduct = (params: UseDeleteProductParams = {}) => {
   return useMutation({
     mutationFn: deleteProduct,
     ...params.mutationConfig,
     onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.invalidateQueries({
-        queryKey: getProductsQueryKey(),
+        queryKey: getDeleteProductQueryKey(),
       });
       params.mutationConfig?.onSuccess?.(
         data,

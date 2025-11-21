@@ -46,23 +46,30 @@ import {
 } from "@/src/components/ui/table";
 import {
   ProductItemResponse,
-  useGetProducts,
-} from "@/src/lib/api/product/get-products";
+  useGetProductsManage,
+} from "@/src/lib/api/product/manage/get-products.manage";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useDeleteProduct } from "@/src/lib/api/product/delete-product";
+import { useDeleteProduct } from "@/src/lib/api/product/manage/delete-product.manage";
 import { toast } from "sonner";
+import { usePagination } from "@/src/hooks/use-pagination";
+import { useGetUser } from "@/src/lib/api/auth/me";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
 interface ProductDetailActionsProps {
   productId: string;
 }
 
 export default function ProductList() {
-  const {
-    data: products,
-    isLoading: loadProducts,
-    error: errorProducts,
-  } = useGetProducts();
+  const { page, limit, handleNext, handlePrev } = usePagination();
+  const { data: products, isLoading: loadProducts } = useGetProductsManage(
+    page,
+    limit
+  );
+  const { data: user, isLoading: loadUser } = useGetUser();
+
+  const productsData = products?.data ?? [];
+  const meta = products?.meta ?? { totalItems: 0, itemCount: 0 };
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -73,7 +80,7 @@ export default function ProductList() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable<ProductItemResponse>({
-    data: products ?? [],
+    data: productsData ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -93,6 +100,17 @@ export default function ProductList() {
 
   return (
     <div className="w-full">
+      <h1 className="mb-3 flex items-center gap-2">
+        Hello,
+        {loadUser ? (
+          <div className="h-6 w-28">
+            <Skeleton className="w-full h-full" />
+          </div>
+        ) : (
+          user?.fullname
+        )}
+      </h1>
+
       <h1 className="text-2xl">Products</h1>
       <div className="flex items-center py-4 gap-2">
         <Input
@@ -129,7 +147,7 @@ export default function ProductList() {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Link href="/products/manage/reate">
+        <Link href="/products/manage/create">
           <Button className="cursor-pointer">Add Product</Button>
         </Link>
       </div>
@@ -160,7 +178,11 @@ export default function ProductList() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Load Products...
+                  <div className="flex flex-col gap-2 w-full">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <Skeleton key={i} className="w-full h-10" />
+                    ))}
+                  </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
@@ -194,23 +216,22 @@ export default function ProductList() {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {page} of {meta.itemCount} / {meta.totalItems} row(s) selected.
         </div>
         <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => handlePrev(page > 1)}
+            disabled={page <= 1}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => handleNext(meta.itemCount >= limit)}
+            disabled={meta.itemCount < limit}
           >
             Next
           </Button>
@@ -304,6 +325,7 @@ export const columns: ColumnDef<ProductItemResponse>[] = [
   },
   {
     id: "actions",
+    header: "Actions",
     enableHiding: false,
     cell: ({ row }) => <ProductActions productId={row.original.id} />,
   },

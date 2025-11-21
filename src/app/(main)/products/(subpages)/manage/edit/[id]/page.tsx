@@ -12,8 +12,8 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useGetProductDetail } from "@/src/lib/api/product/get-product-detail";
-import { useUpdateProduct } from "@/src/lib/api/product/update-product";
+import { useGetProduct } from "@/src/lib/api/product/manage/get-product.manage";
+import { useUpdateProduct } from "@/src/lib/api/product/manage/update-product.manage";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -32,7 +32,6 @@ export default function EditProductPage() {
   const form = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema) as Resolver<CreateProductSchema>,
     defaultValues: {
-      user_id: "",
       name: "",
       price: 0,
       stock: 0,
@@ -42,7 +41,7 @@ export default function EditProductPage() {
     },
   });
 
-  const { data: product, isLoading: loadProduct } = useGetProductDetail({
+  const { data: product, isLoading: loadProduct } = useGetProduct({
     id: productId,
   });
 
@@ -56,7 +55,7 @@ export default function EditProductPage() {
     mutationConfig: {
       onSuccess: () => {
         toast.success("Product updated.");
-        router.push("/products");
+        router.push("/products/manage");
       },
     },
   });

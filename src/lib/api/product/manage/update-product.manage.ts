@@ -1,8 +1,8 @@
 import api from "@/src/lib/axios";
 import { CreateProductSchema } from "@/src/app/(main)/products/schema";
-import { MutationConfig, queryClient } from "../../react-query";
+import { MutationConfig, queryClient } from "../../../react-query";
 import { useMutation } from "@tanstack/react-query";
-import { getProductDetailQueryKey } from "./get-product-detail";
+import { getProductQueryKey } from "./get-product.manage";
 
 interface UpdateProductResponse {
   id: string;
@@ -13,7 +13,7 @@ export const updateProduct = async ({
   id,
   products,
 }: UpdateProductResponse) => {
-  const response = await api.patch(`/products/${id}`, products);
+  const response = await api.patch(`/products/manage/${id}`, products);
   return response.data;
 };
 
@@ -27,7 +27,7 @@ export const useUpdateProduct = (params: UseUpdateProductParams = {}) => {
     ...params.mutationConfig,
     onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.invalidateQueries({
-        queryKey: getProductDetailQueryKey(variables.id),
+        queryKey: getProductQueryKey(variables.id),
       });
       params.mutationConfig?.onSuccess?.(
         data,

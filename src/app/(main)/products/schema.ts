@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const createProductSchema = z.object({
-  user_id: z.string(),
   name: z.string().min(1, "Product name is required"),
   price: z.coerce.number().positive("Price must be greater than 0"),
   stock: z.coerce.number().int().nonnegative("Stock cannot be negative"),

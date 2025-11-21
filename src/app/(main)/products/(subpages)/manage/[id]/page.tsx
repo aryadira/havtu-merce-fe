@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useGetProductDetail } from "@/src/lib/api/product/get-product-detail";
+import { useGetProduct } from "@/src/lib/api/product/manage/get-product.manage";
 import { useParams } from "next/navigation";
 
 export default function ProductDetail() {
@@ -20,7 +20,7 @@ export default function ProductDetail() {
     data: product,
     isLoading: loadProduct,
     isError: errorProduct,
-  } = useGetProductDetail({
+  } = useGetProduct({
     id: id as string,
     queryConfig: {
       enabled: !!id,
