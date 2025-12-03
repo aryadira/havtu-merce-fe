@@ -15,10 +15,26 @@ export interface ProductResponse {
   data: ProductItemResponse[];
   meta: {
     totalItems: number;
-    itemCount: number;
-    totalPages: number | null;
-    currentPage?: number;
+    itemCount: number; 
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+    hasPreviousPage?: boolean;
+    hasNextPage?: boolean;
+    previousPage?: number | null;
+    nextPage?: number | null;
+    offset?: number;
+    startIndex?: number;
+    endIndex?: number;
+    links?: PaginationLinks;
   };
+}
+
+export interface PaginationLinks {
+  first?: string | null;
+  last?: string | null;
+  previous?: string | null;
+  next?: string | null;
 }
 
 export const getProductsManage = async (
@@ -32,7 +48,7 @@ export const getProductsManage = async (
 };
 
 export const getProductsQueryKey = (page: number, limit: number) => [
-  "products",
+  "products-manage",
   page,
   limit,
 ];

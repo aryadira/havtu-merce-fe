@@ -1,9 +1,9 @@
-import { Calendar, Home, Inbox, LogOut, Search, Settings } from "lucide-react";
+import { Calendar, Home, Inbox, LogOut, Search, Settings, ShoppingBag } from "lucide-react";
 
 export const SIDEBAR_NAVIGATIONS = [
   {
     title: "Home",
-    url: "#",
+    url: "/dashboard",
     icon: Home,
   },
   {
@@ -12,14 +12,9 @@ export const SIDEBAR_NAVIGATIONS = [
     icon: Inbox,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Manage Orders",
+    url: "/orders/manage",
+    icon: ShoppingBag,
   },
   {
     title: "Settings",

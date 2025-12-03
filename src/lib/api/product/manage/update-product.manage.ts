@@ -27,7 +27,7 @@ export const useUpdateProduct = (params: UseUpdateProductParams = {}) => {
     ...params.mutationConfig,
     onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.invalidateQueries({
-        queryKey: getProductQueryKey(variables.id),
+        queryKey: ["products-manage"],
       });
       params.mutationConfig?.onSuccess?.(
         data,

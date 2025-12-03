@@ -4,23 +4,25 @@ import { MutationConfig, queryClient } from "../../../react-query";
 import { getProductsQueryKey } from "./get-products.manage";
 
 export const deleteProduct = async (id: string) => {
-  const response = await api.delete(`/products/${id}`);
+  const response = await api.delete(`/products/manage/${id}`);
   return response.data;
 };
 
 interface UseDeleteProductParams {
+  page: number;
+  limit: number;
   mutationConfig?: MutationConfig<typeof deleteProduct>;
 }
 
-export const getDeleteProductQueryKey = () => ["delete-products"];
+export const useDeleteProduct = (params: UseDeleteProductParams) => {
+  const { page, limit } = params;
 
-export const useDeleteProduct = (params: UseDeleteProductParams = {}) => {
   return useMutation({
     mutationFn: deleteProduct,
     ...params.mutationConfig,
     onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.invalidateQueries({
-        queryKey: getDeleteProductQueryKey(),
+        queryKey: getProductsQueryKey(page, limit),
       });
       params.mutationConfig?.onSuccess?.(
         data,

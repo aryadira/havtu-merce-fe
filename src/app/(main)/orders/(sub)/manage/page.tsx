@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -12,8 +13,9 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -53,15 +55,12 @@ import { toast } from "sonner";
 import { usePagination } from "@/src/hooks/use-pagination";
 import { useGetUser } from "@/src/lib/api/auth/me";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { getColumns } from "./columns";
 
-export interface ProductDetailActionsProps {
+interface ProductDetailActionsProps {
   productId: string;
-  page: number;
-  limit: number;
 }
 
-export default function ProductList() {
+export default function OrderList() {
   const { page, limit, next, prev } = usePagination();
   const { data: products, isLoading: loadProducts } = useGetProductsManage(
     page,
@@ -70,7 +69,7 @@ export default function ProductList() {
   const { data: user, isLoading: loadUser } = useGetUser();
 
   const productsData = products?.data ?? [];
-  const meta = products?.meta;
+  const meta = products?.meta ?? { totalItems: 0, itemCount: 0 };
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -82,7 +81,7 @@ export default function ProductList() {
 
   const table = useReactTable<ProductItemResponse>({
     data: productsData ?? [],
-    columns: getColumns(page, limit),
+    columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -101,18 +100,7 @@ export default function ProductList() {
 
   return (
     <div className="w-full">
-      <h1 className="mb-3 flex items-center gap-2">
-        Hello,{" "}
-        {loadUser ? (
-          <div className="h-6 w-28">
-            <Skeleton className="w-full h-full" />
-          </div>
-        ) : (
-          user?.fullname
-        )}
-      </h1>
-
-      <h1 className="text-2xl">Products</h1>
+      <h1 className="text-2xl">Orders</h1>
       <div className="flex items-center py-4 gap-2">
         <Input
           placeholder="Filter products..."
@@ -176,7 +164,7 @@ export default function ProductList() {
             {loadProducts ? (
               <TableRow>
                 <TableCell
-                  colSpan={getColumns(page, limit).length}
+                  colSpan={columns.length}
                   className="h-24 text-center"
                 >
                   <div className="flex flex-col gap-2 w-full">
@@ -205,7 +193,7 @@ export default function ProductList() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={getColumns(page, limit).length}
+                  colSpan={columns.length}
                   className="h-24 text-center"
                 >
                   No results.
@@ -217,24 +205,22 @@ export default function ProductList() {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground flex-1 text-sm">
-          Page {meta?.currentPage} of {meta?.totalPages} — showing{" "}
-          {meta?.itemCount} items out of {meta?.totalItems}.
+          {page} of {meta.itemCount} / {meta.totalItems} row(s) selected.
         </div>
         <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => prev(meta)}
-            disabled={!meta?.hasPreviousPage}
+            disabled={page <= 1}
           >
             Previous
           </Button>
-
           <Button
             variant="outline"
             size="sm"
             onClick={() => next(meta)}
-            disabled={!meta?.hasNextPage}
+            disabled={meta.itemCount < limit}
           >
             Next
           </Button>
@@ -244,11 +230,97 @@ export default function ProductList() {
   );
 }
 
-export function ProductActions({
-  productId,
-  page,
-  limit,
-}: ProductDetailActionsProps) {
+export const columns: ColumnDef<ProductItemResponse>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "desc")}
+      >
+        Product Name
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("name")}</div>
+    ),
+  },
+  {
+    accessorKey: "price",
+    header: () => <div className="text-right">Price</div>,
+    cell: ({ row }) => {
+      const amount = row.getValue("price") as number;
+      const formatted = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+      }).format(amount);
+      return <div className="text-right font-medium">{formatted}</div>;
+    },
+  },
+  {
+    accessorKey: "stock",
+    header: () => <div className="text-right">Stock</div>,
+    cell: ({ row }) => {
+      const stock = row.getValue("stock") as number;
+      return <div className="text-right">{stock}</div>;
+    },
+  },
+  {
+    accessorKey: "created_at",
+    header: () => <div className="text-right">Created Date</div>,
+    cell: ({ row }) => {
+      const createdAt = row.getValue("created_at") as string;
+      return <div className="text-right">{createdAt}</div>;
+    },
+  },
+  {
+    accessorKey: "is_active",
+    header: "Status",
+    cell: ({ row }) => {
+      const isActive = row.getValue("is_active") as boolean;
+      return (
+        <div
+          className={`capitalize ${
+            isActive ? "text-green-600" : "text-red-500"
+          }`}
+        >
+          {isActive ? "Active" : "Inactive"}
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    enableHiding: false,
+    cell: ({ row }) => <OrderActions productId={row.original.id} />,
+  },
+];
+
+export function OrderActions({ productId }: ProductDetailActionsProps) {
   const router = useRouter();
 
   const [openMenu, setOpenMenu] = React.useState(false);
@@ -288,21 +360,15 @@ export function ProductActions({
           Edit
         </DropdownMenuItem>
 
-        <ProductDeletion productId={productId} page={page} limit={limit} />
+        <OrderDeletion productId={productId} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
-export function ProductDeletion({
-  productId,
-  page,
-  limit,
-}: {
-  productId: string;
-  page: number;
-  limit: number;
-}) {
+export function OrderDeletion({ productId }: { productId: string }) {
+  const router = useRouter();
+  const { page, limit } = usePagination();
   const [open, setOpen] = React.useState(false);
 
   const { mutate: deleteProduct, isPending } = useDeleteProduct({
@@ -312,6 +378,7 @@ export function ProductDeletion({
       onSuccess: () => {
         toast.success("Product deleted.");
         setOpen(false);
+        router.refresh();
       },
     },
   });

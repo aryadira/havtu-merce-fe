@@ -12,14 +12,12 @@ interface UseCreateProductParams {
   mutationConfig?: MutationConfig<typeof createProduct>;
 }
 
-export const getCreateProductQueryKey = () => ["create-products"];
-
 export const useCreateProduct = (params: UseCreateProductParams = {}) => {
   return useMutation({
     mutationFn: createProduct,
     ...params.mutationConfig,
     onSuccess: (data, variables, onMutateResult, context) => {
-      queryClient.invalidateQueries({ queryKey: getCreateProductQueryKey() });
+      queryClient.invalidateQueries({ queryKey: ["products-manage"] });
       params.mutationConfig?.onSuccess?.(
         data,
         variables,
