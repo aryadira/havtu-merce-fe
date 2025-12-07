@@ -2,24 +2,21 @@
 
 import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
-import { products } from "@/src/data/products";
-import { ProductCard } from "@/src/components/product/product-cart";
-
-const categories = [
-  "All",
-  "Electronics",
-  "Lighting",
-  "Home",
-  "Office",
-  "Accessories",
-];
+import { ProductCard } from "@/src/components/product/product-card";
+import { useGetProductsShop } from "@/src/lib/api/product/shop/get-products.shop";
+import { usePagination } from "@/src/hooks/use-pagination";
 
 export default function page() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { page, limit, next, prev } = usePagination();
+  const { data: products, isLoading: loadProducts } = useGetProductsShop(
+    page,
+    limit
+  );
 
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category === selectedCategory)
-    : products;
+  const productData = products?.data || [];
+  const meta = products?.meta;
+
+  console.log("products", products);
 
   return (
     <section className="container py-12">
@@ -32,32 +29,9 @@ export default function page() {
         </p>
       </div>
 
-      {/* Category filters */}
-      <div className="flex flex-wrap gap-2 mb-8 fade-in">
-        <Button
-          variant={selectedCategory === null ? "default" : "outline"}
-          size="sm"
-          className="text-xs"
-          onClick={() => setSelectedCategory(null)}
-        >
-          All
-        </Button>
-        {categories.map((category) => (
-          <Button
-            key={category}
-            variant={selectedCategory === category ? "default" : "outline"}
-            size="sm"
-            className="text-xs"
-            onClick={() => setSelectedCategory(category)}
-          >
-            {category}
-          </Button>
-        ))}
-      </div>
-
       {/* Product grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredProducts.map((product, index) => (
+        {products?.data.map((product, index) => (
           <div
             key={product.id}
             className="fade-in"
@@ -68,7 +42,33 @@ export default function page() {
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="text-muted-foreground flex-1 text-sm">
+          Page {meta?.currentPage} of {meta?.totalPages} — showing{" "}
+          {meta?.itemCount} items out of {meta?.totalItems}.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => prev(meta)}
+            disabled={!meta?.hasPreviousPage}
+          >
+            Previous
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => next(meta)}
+            disabled={!meta?.hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
+      {products?.data && productData.length === 0 && (
         <div className="text-center py-16">
           <p className="text-sm text-muted-foreground">No products found</p>
         </div>

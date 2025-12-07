@@ -1,4 +1,4 @@
-export interface Product {
+export interface ProductManage {
   id: string;
   user_id: string;
   name: string;
@@ -7,13 +7,29 @@ export interface Product {
   stock: number;
   image_url: string;
   is_active: boolean;
-  category: string;
   created_at: string;
   updated_at: string;
 }
 
+export interface ProductShop {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  image_url: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: string;
+    fullname: string;
+    email: string;
+  }
+}
+
 export interface CartItem {
-  product: Product;
+  product: ProductShop;
   quantity: number;
 }
 

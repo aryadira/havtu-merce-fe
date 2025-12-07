@@ -30,12 +30,12 @@ export const getProductQueryOptions = (id: string) => {
   });
 };
 
-interface UsegetProductParams {
+interface UseGetProductParams {
   queryConfig?: QueryConfig<typeof getProductQueryOptions>;
   id: string;
 }
 
-export const useGetProduct = (params: UsegetProductParams) => {
+export const useGetProduct = (params: UseGetProductParams) => {
   return useQuery({
     ...getProductQueryOptions(params.id),
     ...params.queryConfig,

@@ -17,19 +17,36 @@ export function OrderSummary({ showDetails = false }: OrderSummaryProps) {
       <div className="space-y-4">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>
+            {new Intl.NumberFormat("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            }).format(subtotal)}
+          </span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Shipping</span>
-          <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+          <span>
+            {shipping === 0
+              ? "Free"
+              : new Intl.NumberFormat("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                }).format(shipping)}
+          </span>
         </div>
 
         <Separator />
 
         <div className="flex justify-between font-medium text-lg">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>
+            {new Intl.NumberFormat("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            }).format(total)}
+          </span>
         </div>
       </div>
     </div>

@@ -17,11 +17,13 @@ export function CartItemRow({ item }: CartItemRowProps) {
   return (
     <div className="flex gap-4 py-4 border-b border-border last:border-0">
       <div className="h-24 w-24 overflow-hidden rounded-md border border-border bg-muted">
-        <img
-          src={product.image_url}
-          alt={product.name}
-          className="size-24 object-cover"
-        />
+        {product.image_url && (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="size-24 object-cover"
+          />
+        )}
       </div>
 
       <div className="flex flex-1 flex-col justify-between">
@@ -34,7 +36,10 @@ export function CartItemRow({ item }: CartItemRowProps) {
               {product.name}
             </Link>
             <p className="font-semibold ml-4">
-              ${(product.price * quantity).toFixed(2)}
+              {new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+              }).format((product.price || 0) * quantity)}
             </p>
           </div>
           <p className="text-sm text-muted-foreground">{product.category}</p>

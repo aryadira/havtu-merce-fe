@@ -1,12 +1,12 @@
 import { useCart } from "@/src/context/cart-context";
-import { Product } from "@/src/types/product";
+import { ProductShop } from "@/src/types/product";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductShop;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -23,22 +23,27 @@ export function ProductCard({ product }: ProductCardProps) {
     <Link href={`/product/${product.id}`} className="group block">
       <article className="product-card-hover rounded-lg border border-border bg-card overflow-hidden">
         <div className="aspect-square overflow-hidden bg-muted">
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {product.image_url && (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )}
         </div>
         <div className="p-4">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-            {product.category}
-          </p>
           <h3 className="text-sm font-medium text-card-foreground mb-2 line-clamp-1">
             {product.name}
           </h3>
+          <h3 className="text-sm font-medium text-card-foreground mb-2 line-clamp-1">
+            {product.user.fullname}
+          </h3>
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-primary">
-              ${product.price.toFixed(2)}
+              {new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+              }).format(product.price || 0)}
             </span>
             <Button
               size="sm"
