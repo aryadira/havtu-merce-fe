@@ -21,11 +21,13 @@ import { useLogin } from "@/src/lib/api/auth/login";
 import { z } from "zod";
 
 import { loginSchema } from "./schema";
+import { useGetUser } from "@/src/lib/api/auth/me";
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: user, refetch } = useGetUser();
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema) as Resolver<LoginSchema>,
@@ -37,9 +39,20 @@ export default function LoginPage() {
 
   const { mutate: login, isPending } = useLogin({
     mutationConfig: {
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success("Login berhasil!");
-        router.push("/products/manage");
+        const redirectUser = await refetch().then((res) => res.data);
+        switch (redirectUser?.role) {
+          case "admin":
+            router.push("/products/access");
+            break;
+          case "seller":
+            router.push("/products/manage");
+            break;
+          case "user":
+            router.push("/products/shop");
+            break;
+        }
       },
       onError: (error: any) => {
         const { message } = error?.response?.data;

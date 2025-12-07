@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Toaster } from "sonner";
 import QueryProvider from "../components/providers/QueryProviders";
+import { CartProvider } from "../context/cart-context";
 
 // 🧩 Font setup
 const geistSans = Geist({
@@ -36,7 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <QueryProvider>
-          {children}
+          <CartProvider>{children}</CartProvider>
           <Toaster position="top-right" richColors closeButton />
         </QueryProvider>
       </body>

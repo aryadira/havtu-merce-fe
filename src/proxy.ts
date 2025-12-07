@@ -24,7 +24,17 @@ export async function proxy(req: NextRequest) {
   const isPublicRoute = pathname === "/" || PUBLIC_PATHS.has(pathname);
 
   // 1. Public route → skip auth
-  if (isPublicRoute) return next;
+  if (isPublicRoute) {
+    if (token) {
+      const decoded: any = jwt.decode(token);
+      const role = decoded?.role;
+      
+      if (role && ROLE_ACCESS[role]) {
+        return NextResponse.redirect(new URL(ROLE_ACCESS[role][0], req.url));
+      }
+    }
+    return next;
+  }
 
   // 2. Non-public but no token → redirect
   if (!token) {

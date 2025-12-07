@@ -1,7 +1,7 @@
 import api from "@/src/lib/axios";
 import { MutationConfig, queryClient } from "@/src/lib/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { CreateProductSchema } from "@/src/app/(main)/products/schema";
+import { CreateProductSchema } from "@/src/app/(admin)/products/schema";
 
 export const createProduct = async (products: CreateProductSchema) => {
   const response = await api.post("/products/manage", products);

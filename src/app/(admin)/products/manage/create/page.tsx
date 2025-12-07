@@ -15,7 +15,7 @@ import { Textarea } from "@/src/components/ui/textarea";
 import { useCreateProduct } from "@/src/lib/api/product/manage/create-product.manage";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProductSchema, type CreateProductSchema } from "../../../schema";
+import { createProductSchema, type CreateProductSchema } from "../../schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 

@@ -69,7 +69,7 @@ export function AppSidebar() {
                   <button
                     onClick={handleLogout}
                     disabled={isPending}
-                    className="flex w-full items-center gap-2 text-red-600 hover:text-red-700 transition"
+                    className="cursor-pointer flex w-full items-center gap-2 text-red-600 hover:text-red-700 transition"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>{isPending ? "Logging out..." : "Logout"}</span>

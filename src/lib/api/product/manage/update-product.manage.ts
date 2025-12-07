@@ -1,8 +1,7 @@
 import api from "@/src/lib/axios";
-import { CreateProductSchema } from "@/src/app/(main)/products/schema";
+import { CreateProductSchema } from "@/src/app/(admin)/products/schema";
 import { MutationConfig, queryClient } from "../../../react-query";
 import { useMutation } from "@tanstack/react-query";
-import { getProductQueryKey } from "./get-product.manage";
 
 interface UpdateProductResponse {
   id: string;
