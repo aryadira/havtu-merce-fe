@@ -45,10 +45,10 @@ import {
 import {
   ProductItemResponse,
   useGetProductsManage,
-} from "@/src/lib/api/product/manage/get-products.manage";
+} from "@/src/lib/api/products/manage/get-products.manage";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useDeleteProduct } from "@/src/lib/api/product/manage/delete-product.manage";
+import { useDeleteProduct } from "@/src/lib/api/products/manage/delete-product.manage";
 import { toast } from "sonner";
 import { usePagination } from "@/src/hooks/use-pagination";
 import { useGetUser } from "@/src/lib/api/auth/me";

@@ -12,8 +12,8 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useGetProduct } from "@/src/lib/api/product/manage/get-product.manage";
-import { useUpdateProduct } from "@/src/lib/api/product/manage/update-product.manage";
+import { useGetProduct } from "@/src/lib/api/products/manage/get-product.manage";
+import { useUpdateProduct } from "@/src/lib/api/products/manage/update-product.manage";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {

@@ -42,9 +42,11 @@ export function CartItemRow({ item }: CartItemRowProps) {
               }).format((product.price || 0) * quantity)}
             </p>
           </div>
-          <h3 className="text-sm font-medium text-muted-foreground line-clamp-1">
-            {product.user.fullname}
-          </h3>
+          {product.user && (
+            <p className="text-sm text-muted-foreground line-clamp-1">
+              Seller: {product.user.fullname}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-between mt-2">

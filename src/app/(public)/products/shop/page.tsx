@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { ProductCard } from "@/src/components/product/product-card";
-import { useGetProductsShop } from "@/src/lib/api/product/shop/get-products.shop";
+import { useGetProductsShop } from "@/src/lib/api/products/shop/get-products.shop";
 import { usePagination } from "@/src/hooks/use-pagination";
 
 export default function page() {

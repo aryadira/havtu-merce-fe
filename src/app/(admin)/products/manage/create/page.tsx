@@ -12,7 +12,7 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useCreateProduct } from "@/src/lib/api/product/manage/create-product.manage";
+import { useCreateProduct } from "@/src/lib/api/products/manage/create-product.manage";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createProductSchema, type CreateProductSchema } from "../../schema";

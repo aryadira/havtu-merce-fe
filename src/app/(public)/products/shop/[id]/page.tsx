@@ -9,9 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Skeleton } from "@/src/components/ui/skeleton";
-import { useGetProduct } from "@/src/lib/api/products/manage/get-product.manage";
+import { useCart } from "@/src/context/cart-context";
+import { useGetProduct } from "@/src/lib/api/products/shop/get-product.shop";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ export default function ProductDetail() {
       enabled: !!id,
     },
   });
+  const { addItem } = useCart();
 
   if (loadProduct) {
     return <p className="p-5">Loading...</p>;
@@ -38,6 +40,13 @@ export default function ProductDetail() {
       </div>
     );
   }
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product);
+    toast.success(`${product.name} added to cart`);
+  };
 
   return (
     <div className="max-w-3xl mx-auto mt-10">
@@ -80,6 +89,9 @@ export default function ProductDetail() {
               ? new Date(product.updated_at).toLocaleDateString("id-ID")
               : "-"}
           </p>
+          <Button onClick={handleAddToCart} className="cursor-pointer">
+            Add to Cart
+          </Button>
         </CardFooter>
       </Card>
     </div>

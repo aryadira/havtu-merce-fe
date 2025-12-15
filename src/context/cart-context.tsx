@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useEffect } from "react";
-import { CartItem, Product, ShippingInfo } from "../types/product";
+import { CartItem, ProductShop, ShippingInfo } from "../types/product";
 
 interface CartState {
   items: CartItem[];
@@ -9,7 +9,7 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: "ADD_ITEM"; product: Product; quantity?: number }
+  | { type: "ADD_ITEM"; product: ProductShop; quantity?: number }
   | { type: "REMOVE_ITEM"; productId: string }
   | { type: "UPDATE_QUANTITY"; productId: string; quantity: number }
   | { type: "CLEAR_CART" }
@@ -79,7 +79,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 interface CartContextType {
   items: CartItem[];
   shippingInfo: ShippingInfo | null;
-  addItem: (product: Product, quantity?: number) => void;
+  addItem: (product: ProductShop, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -115,7 +115,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const addItem = (product: Product, quantity = 1) => {
+  const addItem = (product: ProductShop, quantity = 1) => {
     dispatch({ type: "ADD_ITEM", product, quantity });
   };
 

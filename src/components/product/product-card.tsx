@@ -20,7 +20,7 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Link href={`/product/${product.id}`} className="group block">
+    <Link href={`/products/shop/${product.id}`} className="group block">
       <article className="product-card-hover rounded-lg border border-border bg-card overflow-hidden">
         <div className="aspect-square overflow-hidden bg-muted">
           {product.image_url && (

@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Button } from "@/src/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import { ProductItemResponse } from "@/src/lib/api/product/manage/get-products.manage";
+import { ProductItemResponse } from "@/src/lib/api/products/manage/get-products.manage";
 import { ProductActions } from "./page"; // sesuaikan dengan path
 
 export const getColumns = (
