@@ -11,11 +11,13 @@ import {
 } from "@/src/components/ui/card";
 import { useCart } from "@/src/context/cart-context";
 import { useGetProduct } from "@/src/lib/api/products/shop/get-product.shop";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useCheckout } from "@/src/lib/api/orders/checkout";
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const router = useRouter();
 
   const {
     data: product,
@@ -28,6 +30,18 @@ export default function ProductDetail() {
     },
   });
   const { addItem } = useCart();
+  const { mutate: checkout, isPending: isCheckingOut } = useCheckout({
+    mutationConfig: {
+      onSuccess: (data) => {
+        toast.success("Order placed successfully!");
+        router.push(`/orders/${data.id}`);
+      },
+      onError: (error: any) => {
+        const { message } = error.response?.data || {};
+        toast.error(message || "Checkout failed. Please try again.");
+      },
+    },
+  });
 
   if (loadProduct) {
     return <p className="p-5">Loading...</p>;
@@ -46,6 +60,18 @@ export default function ProductDetail() {
     e.stopPropagation();
     addItem(product);
     toast.success(`${product.name} added to cart`);
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    checkout({
+      items: [
+        {
+          product_id: product.id,
+          item_qty: 1, // Default to 1 as there is no qty selector
+        },
+      ],
+    });
   };
 
   return (
@@ -89,9 +115,19 @@ export default function ProductDetail() {
               ? new Date(product.updated_at).toLocaleDateString("id-ID")
               : "-"}
           </p>
-          <Button onClick={handleAddToCart} className="cursor-pointer">
-            Add to Cart
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleBuyNow}
+              variant="secondary"
+              className="cursor-pointer"
+              disabled={isCheckingOut}
+            >
+              {isCheckingOut ? "Processing..." : "Buy Now"}
+            </Button>
+            <Button onClick={handleAddToCart} className="cursor-pointer">
+              Add to Cart
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </div>

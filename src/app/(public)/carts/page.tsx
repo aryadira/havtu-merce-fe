@@ -7,12 +7,34 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CartItemRow } from "./components/cart-item-row";
 import { OrderSummary } from "./components/order-summary";
-import { useGetCarts } from "@/src/lib/api/carts/get-carts";
+import { useGetCarts, getCartsQueryKey } from "@/src/lib/api/carts/get-carts";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { useCheckout } from "@/src/lib/api/orders/checkout";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Cart = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: carts, isLoading: loadCarts } = useGetCarts();
+
+  const { mutate: checkout, isPending } = useCheckout({
+    mutationConfig: {
+      onSuccess: (data) => {
+        toast.success("Checkout successful!");
+        router.push(`/orders/${data.id}`);
+      },
+      onError: (error: any) => {
+        const { message } = error.response?.data || {};
+        toast.error(message || "Checkout failed. Please try again.");
+      },
+    },
+  });
+
+  const handleCheckout = () => {
+    // Empty array for cart checkout as per backend logic
+    checkout({ items: [] });
+  };
 
   const cartItems = carts?.cart_items;
   const cartItemsCount = cartItems?.length || 0;
@@ -54,10 +76,11 @@ const Cart = () => {
             <Button
               className="w-full mt-4 btn-bounce"
               size="lg"
-              onClick={() => router.push("/checkout")}
+              onClick={() => handleCheckout()}
+              disabled={isPending}
             >
-              Proceed to Checkout
-              <ArrowRight className="h-4 w-4 ml-2" />
+              {isPending ? "Processing..." : "Proceed to Checkout"}
+              {!isPending && <ArrowRight className="h-4 w-4 ml-2" />}
             </Button>
           </div>
         </div>

@@ -7,8 +7,11 @@ import { Button } from "./ui/button";
 import { useLogout } from "../lib/api/auth/logout";
 import { toast } from "sonner";
 import { useGetCarts } from "../lib/api/carts/get-carts";
+import { useGetUser } from "../lib/api/auth/me";
 
 export function AppHeader() {
+  const { data: user, isLoading: loadUser } = useGetUser();
+
   const { data: carts, isLoading: loadCarts } = useGetCarts();
   const itemCount =
     carts?.cart_items?.reduce((total, item) => total + item.item_qty, 0) || 0;
@@ -32,20 +35,26 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
       <div className="px-10 h-16 flex items-center justify-between">
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-semibold text-foreground hover:text-primary transition-colors"
-        >
-          <Package className="h-5 w-5" />
-          <span className="text-sm tracking-tight">MINIMAL.SHOP</span>
-        </Link>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-semibold text-foreground hover:text-primary transition-colors"
+          >
+            <Package className="h-5 w-5" />
+            <span className="text-sm tracking-tight">MINIMAL.SHOP</span>
+          </Link>
+
+          <h1 className="text-sm">
+            {user?.fullname} - {user?.email}
+          </h1>
+        </div>
 
         <nav className="flex items-center gap-6">
           <Link
-            href="/"
+            href="/orders"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
           >
-            Products
+            Orders
           </Link>
           <Link href="/carts">
             <Button variant="ghost" size="sm" className="relative btn-bounce">

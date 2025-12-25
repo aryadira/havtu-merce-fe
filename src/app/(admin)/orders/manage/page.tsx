@@ -45,31 +45,29 @@ import {
   TableRow,
 } from "@/src/components/ui/table";
 import {
-  ProductItemResponse,
-  useGetProductsManage,
-} from "@/src/lib/api/products/manage/get-products.manage";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useDeleteProduct } from "@/src/lib/api/products/manage/delete-product.manage";
-import { toast } from "sonner";
+  OrdersListResponse,
+  useGetOrdersManage,
+} from "@/src/lib/api/orders/get-orders-manage";
+import { OrderResponse } from "@/src/lib/api/orders/get-order";
 import { usePagination } from "@/src/hooks/use-pagination";
-import { useGetUser } from "@/src/lib/api/auth/me";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-interface ProductDetailActionsProps {
-  productId: string;
+interface OrderDetailActionsProps {
+  orderId: string;
 }
 
 export default function OrderList() {
   const { page, limit, next, prev } = usePagination();
-  const { data: products, isLoading: loadProducts } = useGetProductsManage(
+  const { data: orders, isLoading: loadOrders } = useGetOrdersManage(
     page,
     limit
   );
-  const { data: user, isLoading: loadUser } = useGetUser();
+  // const { data: user, isLoading: loadUser } = useGetUser();
 
-  const productsData = products?.data ?? [];
-  const meta = products?.meta ?? { totalItems: 0, itemCount: 0 };
+  const ordersData = orders?.data ?? [];
+  const meta = orders?.meta ?? { totalItems: 0, itemCount: 0 };
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -79,8 +77,8 @@ export default function OrderList() {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const table = useReactTable<ProductItemResponse>({
-    data: productsData ?? [],
+  const table = useReactTable<OrderResponse>({
+    data: ordersData ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -100,13 +98,13 @@ export default function OrderList() {
 
   return (
     <div className="w-full">
-      <h1 className="text-2xl">Orders</h1>
+      <h1 className="text-2xl">Manage Orders</h1>
       <div className="flex items-center py-4 gap-2">
         <Input
-          placeholder="Filter products..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter by Order ID..."
+          value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("id")?.setFilterValue(event.target.value)
           }
           className="max-w-sm cursor-pointer"
         />
@@ -136,9 +134,6 @@ export default function OrderList() {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Link href="/products/manage/create">
-          <Button className="cursor-pointer">Add Product</Button>
-        </Link>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -161,7 +156,7 @@ export default function OrderList() {
             ))}
           </TableHeader>
           <TableBody>
-            {loadProducts ? (
+            {loadOrders ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -230,49 +225,29 @@ export default function OrderList() {
   );
 }
 
-export const columns: ColumnDef<ProductItemResponse>[] = [
+export const columns: ColumnDef<OrderResponse>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    accessorKey: "id",
+    header: "Order ID",
+    cell: ({ row }) => <div className="text-xs">{row.getValue("id")}</div>,
   },
   {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "desc")}
+    accessorKey: "user_id",
+    header: "User ID",
+    cell: ({ row }) => (
+      <div
+        className="text-xs truncate max-w-[100px]"
+        title={row.getValue("user_id")}
       >
-        Product Name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+        {row.getValue("user_id")}
+      </div>
     ),
   },
   {
-    accessorKey: "price",
-    header: () => <div className="text-right">Price</div>,
+    accessorKey: "total_amount",
+    header: () => <div className="text-right">Total Amount</div>,
     cell: ({ row }) => {
-      const amount = row.getValue("price") as number;
+      const amount = row.getValue("total_amount") as number;
       const formatted = new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -281,33 +256,47 @@ export const columns: ColumnDef<ProductItemResponse>[] = [
     },
   },
   {
-    accessorKey: "stock",
-    header: () => <div className="text-right">Stock</div>,
+    accessorKey: "order_status",
+    header: "Order Status",
     cell: ({ row }) => {
-      const stock = row.getValue("stock") as number;
-      return <div className="text-right">{stock}</div>;
+      const status = row.getValue("order_status") as string;
+      return <div className="font-medium text-xs">{status}</div>;
+    },
+  },
+  {
+    accessorKey: "payment_status",
+    header: "Payment",
+    cell: ({ row }) => {
+      const status = row.getValue("payment_status") as string;
+      return (
+        <div
+          className={`text-xs font-semibold ${
+            status === "PAID"
+              ? "text-green-600"
+              : status === "UNPAID"
+              ? "text-red-500"
+              : "text-gray-500"
+          }`}
+        >
+          {status}
+        </div>
+      );
     },
   },
   {
     accessorKey: "created_at",
-    header: () => <div className="text-right">Created Date</div>,
+    header: () => <div className="text-right">Ordered At</div>,
     cell: ({ row }) => {
-      const createdAt = row.getValue("created_at") as string;
-      return <div className="text-right">{createdAt}</div>;
-    },
-  },
-  {
-    accessorKey: "is_active",
-    header: "Status",
-    cell: ({ row }) => {
-      const isActive = row.getValue("is_active") as boolean;
+      const date = new Date(row.getValue("created_at"));
       return (
-        <div
-          className={`capitalize ${
-            isActive ? "text-green-600" : "text-red-500"
-          }`}
-        >
-          {isActive ? "Active" : "Inactive"}
+        <div className="text-right text-xs">
+          {date.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </div>
       );
     },
@@ -316,19 +305,13 @@ export const columns: ColumnDef<ProductItemResponse>[] = [
     id: "actions",
     header: "Actions",
     enableHiding: false,
-    cell: ({ row }) => <OrderActions productId={row.original.id} />,
+    cell: ({ row }) => <OrderActions orderId={row.original.id} />,
   },
 ];
 
-export function OrderActions({ productId }: ProductDetailActionsProps) {
+export function OrderActions({ orderId }: OrderDetailActionsProps) {
   const router = useRouter();
-
   const [openMenu, setOpenMenu] = React.useState(false);
-
-  const copyProductId = (id: string) => {
-    navigator.clipboard.writeText(productId.toString());
-    toast.success("Product ID copied to clipboard.");
-  };
 
   return (
     <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
@@ -342,90 +325,15 @@ export function OrderActions({ productId }: ProductDetailActionsProps) {
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => copyProductId(productId)}
-        >
-          Copy Product ID
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(`/products/manage/${productId}`)}
+          onClick={() => {
+            // TODO: Navigate to detail page for seller/admin
+            // router.push(`/orders/manage/${orderId}`)
+            toast.info("Detail page for seller not implemented yet.");
+          }}
         >
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(`/products/manage/edit/${productId}`)}
-        >
-          Edit
-        </DropdownMenuItem>
-
-        <OrderDeletion productId={productId} />
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-export function OrderDeletion({ productId }: { productId: string }) {
-  const router = useRouter();
-  const { page, limit } = usePagination();
-  const [open, setOpen] = React.useState(false);
-
-  const { mutate: deleteProduct, isPending } = useDeleteProduct({
-    page,
-    limit,
-    mutationConfig: {
-      onSuccess: () => {
-        toast.success("Product deleted.");
-        setOpen(false);
-        router.refresh();
-      },
-    },
-  });
-
-  const handleDeleteProduct = (id: string) => {
-    deleteProduct(id);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem
-          data-no-close
-          onSelect={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            setTimeout(() => setOpen(true), 0);
-          }}
-          className="cursor-pointer text-red-600"
-        >
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete product?</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. Are you sure you want to remove this
-            product?
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter className="gap-2">
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-
-          <Button
-            variant="destructive"
-            onClick={() => handleDeleteProduct(productId)}
-            disabled={isPending}
-          >
-            {isPending ? "Deleting..." : "Yes, Delete"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }

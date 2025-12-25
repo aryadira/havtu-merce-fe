@@ -2,8 +2,11 @@ import axios from "axios";
 import { useAuthStore } from "@/src/stores/auth.store";
 import Cookies from "js-cookie";
 
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1",
+  baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -29,17 +32,20 @@ api.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-            { refreshToken }
-          );
+          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
+            refreshToken,
+          });
 
           useAuthStore.getState().setTokens(data.token, data.refreshToken);
+
           originalRequest.headers.Authorization = `Bearer ${data.token}`;
           return api(originalRequest);
         } catch (err) {
           useAuthStore.getState().clearAuth();
+          return Promise.reject(err);
         }
+      } else {
+        useAuthStore.getState().clearAuth();
       }
     }
 

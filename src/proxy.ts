@@ -8,7 +8,7 @@ const PUBLIC_PATHS = new Set(["/login", "/register", "/unauthorized"]);
 // Role-based routes
 const ROLE_ACCESS: Record<string, string[]> = {
   user: ["/products/shop", "/cart"],
-  seller: ["/products/manage", "/orders"],
+  seller: ["/products/manage", "/orders/manage"],
   admin: ["/products/access", "/dashboard/admin"],
 };
 
@@ -28,7 +28,7 @@ export async function proxy(req: NextRequest) {
     if (token) {
       const decoded: any = jwt.decode(token);
       const role = decoded?.role;
-      
+
       if (role && ROLE_ACCESS[role]) {
         return NextResponse.redirect(new URL(ROLE_ACCESS[role][0], req.url));
       }
