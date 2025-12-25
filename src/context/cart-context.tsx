@@ -29,14 +29,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       );
       if (existingIndex >= 0) {
         const newItems = [...state.items];
-        newItems[existingIndex].quantity += action.quantity || 1;
+        newItems[existingIndex].item_qty += action.quantity || 1;
         return { ...state, items: newItems };
       }
       return {
         ...state,
         items: [
           ...state.items,
-          { product: action.product, quantity: action.quantity || 1 },
+          { product: action.product, item_qty: action.quantity || 1 },
         ],
       };
     }
@@ -60,7 +60,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: state.items.map((item) =>
           item.product.id === action.productId
-            ? { ...item, quantity: action.quantity }
+            ? { ...item, item_qty: action.quantity }
             : item
         ),
       };
@@ -135,9 +135,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "SET_SHIPPING_INFO", info });
   };
 
-  const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = state.items.reduce((sum, item) => sum + item.item_qty, 0);
   const subtotal = state.items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + item.product.price * item.item_qty,
     0
   );
   const shipping = subtotal > 100 ? 0 : 12;

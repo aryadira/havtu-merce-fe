@@ -6,9 +6,12 @@ import { useCart } from "../context/cart-context";
 import { Button } from "./ui/button";
 import { useLogout } from "../lib/api/auth/logout";
 import { toast } from "sonner";
+import { useGetCarts } from "../lib/api/carts/get-carts";
 
 export function AppHeader() {
-  const { itemCount } = useCart();
+  const { data: carts, isLoading: loadCarts } = useGetCarts();
+  const itemCount =
+    carts?.cart_items?.reduce((total, item) => total + item.item_qty, 0) || 0;
 
   const { mutate: logout, isPending } = useLogout({
     mutationConfig: {
@@ -49,7 +52,7 @@ export function AppHeader() {
               <ShoppingCart className="h-4 w-4" />
               {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                  {itemCount > 9 ? "9+" : itemCount}
+                  {itemCount > 99 ? "99+" : itemCount}
                 </span>
               )}
             </Button>

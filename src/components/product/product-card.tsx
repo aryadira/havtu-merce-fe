@@ -4,23 +4,31 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import { useAddToCart } from "@/src/lib/api/carts/add-to-cart";
+import { useGetUser } from "@/src/lib/api/auth/me";
 
 interface ProductCardProps {
   product: ProductShop;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCart();
+  // const { addItem } = useCart();
+  const { data: user } = useGetUser();
+  const { mutate: addToCart } = useAddToCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product);
+    addToCart({
+      user_id: user?.id,
+      product_id: product.id,
+      item_qty: 1,
+    });
     toast.success(`${product.name} added to cart`);
   };
 
   return (
-    <Link href={`/products/shop/${product.id}`} className="group block">
+    <Link href={`/products/${product.id}`} className="group block">
       <article className="product-card-hover rounded-lg border border-border bg-card overflow-hidden">
         <div className="aspect-square overflow-hidden bg-muted">
           {product.image_url && (

@@ -1,32 +1,12 @@
 import api from "@/src/lib/axios";
 import { QueryConfig } from "@/src/lib/react-query";
+import { Meta } from "@/src/types/meta";
 import { ProductShop } from "@/src/types/product";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export interface ProductResponse {
   data: ProductShop[];
-  meta: {
-    totalItems: number;
-    itemCount: number;
-    itemsPerPage: number;
-    totalPages: number;
-    currentPage: number;
-    hasPreviousPage?: boolean;
-    hasNextPage?: boolean;
-    previousPage?: number | null;
-    nextPage?: number | null;
-    offset?: number;
-    startIndex?: number;
-    endIndex?: number;
-    links?: PaginationLinks;
-  };
-}
-
-export interface PaginationLinks {
-  first?: string | null;
-  last?: string | null;
-  previous?: string | null;
-  next?: string | null;
+  meta: Meta;
 }
 
 export const getProductsShop = async (

@@ -16,10 +16,7 @@ import { useGetProduct } from "@/src/lib/api/products/manage/get-product.manage"
 import { useUpdateProduct } from "@/src/lib/api/products/manage/update-product.manage";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import {
-  createProductSchema,
-  type CreateProductSchema,
-} from "../../../../schema";
+import { createProductSchema, type CreateProductSchema } from "../../../schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect } from "react";

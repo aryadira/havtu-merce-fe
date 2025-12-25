@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Resolver } from "react-hook-form";
@@ -27,6 +28,7 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const { data: user, refetch } = useGetUser();
 
   const form = useForm<LoginSchema>({
@@ -40,21 +42,31 @@ export default function LoginPage() {
   const { mutate: login, isPending } = useLogin({
     mutationConfig: {
       onSuccess: async () => {
+        setIsRedirecting(true);
         toast.success("Login berhasil!");
-        const redirectUser = await refetch().then((res) => res.data);
-        switch (redirectUser?.role) {
-          case "admin":
-            router.push("/products/access");
-            break;
-          case "seller":
-            router.push("/products/manage");
-            break;
-          case "user":
-            router.push("/products/shop");
-            break;
+        try {
+          const redirectUser = await refetch().then((res) => res.data);
+          switch (redirectUser?.role) {
+            case "admin":
+              router.push("/products/access");
+              break;
+            case "seller":
+              router.push("/products/manage");
+              break;
+            case "user":
+              router.push("/products/shop");
+              break;
+            default:
+              setIsRedirecting(false); // Should not happen if role exists
+              break;
+          }
+        } catch (error) {
+          console.error("Redirect error:", error);
+          setIsRedirecting(false);
         }
       },
       onError: (error: any) => {
+        setIsRedirecting(false);
         const { message } = error?.response?.data;
         toast.error(message);
       },
@@ -115,9 +127,13 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="cursor-pointer"
-              disabled={isPending}
+              disabled={isPending || isRedirecting}
             >
-              {isPending ? "Loading..." : "Login"}
+              {isPending
+                ? "Loading..."
+                : isRedirecting
+                ? "Redirecting..."
+                : "Login"}
             </Button>
           </form>
         </Form>
