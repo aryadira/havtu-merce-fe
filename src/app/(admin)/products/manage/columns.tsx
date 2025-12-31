@@ -44,23 +44,35 @@ export const getColumns = (
     ),
   },
   {
-    accessorKey: "price",
+    id: "price",
     header: () => <div className="text-right">Price</div>,
     cell: ({ row }) => {
-      const amount = row.getValue("price") as number;
+      const items = row.original.items;
+      const price = items?.[0]?.price || 0;
       const formatted = new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
-      }).format(amount);
-      return <div className="text-right font-medium">{formatted}</div>;
+      }).format(price);
+
+      const hasMultiplePrices =
+        items?.length > 1 && new Set(items.map((i) => i.price)).size > 1;
+
+      return (
+        <div className="text-right font-medium">
+          {formatted}
+          {hasMultiplePrices ? "+" : ""}
+        </div>
+      );
     },
   },
   {
-    accessorKey: "stock",
-    header: () => <div className="text-right">Stock</div>,
+    id: "stock",
+    header: () => <div className="text-right">Total Stock</div>,
     cell: ({ row }) => {
-      const stock = row.getValue("stock") as number;
-      return <div className="text-right">{stock}</div>;
+      const items = row.original.items;
+      const totalStock =
+        items?.reduce((acc, item) => acc + item.qty_in_stock, 0) || 0;
+      return <div className="text-right">{totalStock}</div>;
     },
   },
   {

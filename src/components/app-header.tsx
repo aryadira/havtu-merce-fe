@@ -45,7 +45,7 @@ export function AppHeader() {
           </Link>
 
           <h1 className="text-sm">
-            {user?.fullname} - {user?.email}
+            {user?.profile.fullname} - {user?.email}
           </h1>
         </div>
 

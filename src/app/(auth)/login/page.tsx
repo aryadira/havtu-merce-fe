@@ -46,14 +46,14 @@ export default function LoginPage() {
         toast.success("Login berhasil!");
         try {
           const redirectUser = await refetch().then((res) => res.data);
-          switch (redirectUser?.role) {
-            case "admin":
+          switch (redirectUser?.user_role_slug) {
+            case "administrator":
               router.push("/products/access");
               break;
             case "seller":
               router.push("/products/manage");
               break;
-            case "user":
+            case "customer":
               router.push("/products/shop");
               break;
             default:

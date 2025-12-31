@@ -4,9 +4,16 @@ import { useQuery, queryOptions } from "@tanstack/react-query";
 
 export interface CurrentUserResponse {
   id: string;
-  fullname?: string;
+  user_role_id: string;
+  user_role_slug: string;
+  username: string;
   email: string;
-  role: string;
+  profile: {
+    id: string;
+    user_id: string;
+    fullname: string;
+    phone_number: string;
+  };
 }
 
 export const getUser = async () => {

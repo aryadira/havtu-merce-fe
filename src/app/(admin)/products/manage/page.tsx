@@ -72,6 +72,8 @@ export default function ProductList() {
   const productsData = products?.data ?? [];
   const meta = products?.meta;
 
+  console.log("{ProductData}", productsData);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -100,7 +102,7 @@ export default function ProductList() {
   });
 
   return (
-    <div className="w-full">
+    <div className="max-w-4xl">
       <h1 className="mb-3 flex items-center gap-2">
         Hello,{" "}
         {loadUser ? (
@@ -108,7 +110,7 @@ export default function ProductList() {
             <Skeleton className="w-full h-full" />
           </div>
         ) : (
-          user?.fullname
+          user?.profile.fullname
         )}
       </h1>
 

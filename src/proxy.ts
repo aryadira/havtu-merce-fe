@@ -7,9 +7,9 @@ const PUBLIC_PATHS = new Set(["/login", "/register", "/unauthorized"]);
 
 // Role-based routes
 const ROLE_ACCESS: Record<string, string[]> = {
-  user: ["/products/shop", "/cart"],
+  customer: ["/products/shop", "/cart"],
   seller: ["/products/manage", "/orders/manage"],
-  admin: ["/products/access", "/dashboard/admin"],
+  administrator: ["/products/access", "/dashboard/admin"],
 };
 
 export async function proxy(req: NextRequest) {
