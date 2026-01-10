@@ -14,7 +14,7 @@ import {
 import { SIDEBAR_NAVIGATIONS } from "../lib/constants/sidebar-navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { useLogout } from "../lib/api/auth/logout";
+import { useLogout } from "../lib/api/auth";
 import { toast } from "sonner";
 import { cn } from "@/src/lib/utils";
 

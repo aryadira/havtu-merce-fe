@@ -12,27 +12,14 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/src/components/ui/input";
 import {
   Table,
@@ -45,29 +32,22 @@ import {
 import {
   ProductItemResponse,
   useGetProductsManage,
-} from "@/src/lib/api/products/manage/get-products.manage";
-import { useRouter } from "next/navigation";
+} from "@/src/lib/api/products";
 import Link from "next/link";
-import { useDeleteProduct } from "@/src/lib/api/products/manage/delete-product.manage";
-import { toast } from "sonner";
 import { usePagination } from "@/src/hooks/use-pagination";
-import { useGetUser } from "@/src/lib/api/auth/me";
+import { useMe } from "@/src/lib/api/auth";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { getColumns } from "./columns";
 
-export interface ProductDetailActionsProps {
-  productId: string;
-  page: number;
-  limit: number;
-}
+export const dynamic = "force-dynamic";
 
-export default function ProductList() {
+function ProductListContent() {
   const { page, limit, next, prev } = usePagination();
   const { data: products, isLoading: loadProducts } = useGetProductsManage(
     page,
     limit
   );
-  const { data: user, isLoading: loadUser } = useGetUser();
+  const { data: user, isLoading: loadUser } = useMe();
 
   const productsData = products?.data ?? [];
   const meta = products?.meta;
@@ -246,121 +226,10 @@ export default function ProductList() {
   );
 }
 
-export function ProductActions({
-  productId,
-  page,
-  limit,
-}: ProductDetailActionsProps) {
-  const router = useRouter();
-
-  const [openMenu, setOpenMenu] = React.useState(false);
-
-  const copyProductId = (id: string) => {
-    navigator.clipboard.writeText(productId.toString());
-    toast.success("Product ID copied to clipboard.");
-  };
-
+export default function ProductList() {
   return (
-    <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => copyProductId(productId)}
-        >
-          Copy Product ID
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(`/products/manage/${productId}`)}
-        >
-          View Details
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(`/products/manage/edit/${productId}`)}
-        >
-          Edit
-        </DropdownMenuItem>
-
-        <ProductDeletion productId={productId} page={page} limit={limit} />
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export function ProductDeletion({
-  productId,
-  page,
-  limit,
-}: {
-  productId: string;
-  page: number;
-  limit: number;
-}) {
-  const [open, setOpen] = React.useState(false);
-
-  const { mutate: deleteProduct, isPending } = useDeleteProduct({
-    page,
-    limit,
-    mutationConfig: {
-      onSuccess: () => {
-        toast.success("Product deleted.");
-        setOpen(false);
-      },
-    },
-  });
-
-  const handleDeleteProduct = (id: string) => {
-    deleteProduct(id);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem
-          data-no-close
-          onSelect={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            setTimeout(() => setOpen(true), 0);
-          }}
-          className="cursor-pointer text-red-600"
-        >
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete product?</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. Are you sure you want to remove this
-            product?
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter className="gap-2">
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-
-          <Button
-            variant="destructive"
-            onClick={() => handleDeleteProduct(productId)}
-            disabled={isPending}
-          >
-            {isPending ? "Deleting..." : "Yes, Delete"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <React.Suspense fallback={<Skeleton className="w-full h-96" />}>
+      <ProductListContent />
+    </React.Suspense>
   );
 }

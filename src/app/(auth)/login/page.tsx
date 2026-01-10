@@ -18,18 +18,19 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 
-import { useLogin } from "@/src/lib/api/auth/login";
+import { useLogin } from "@/src/lib/api/auth";
 import { z } from "zod";
 
 import { loginSchema } from "./schema";
-import { useGetUser } from "@/src/lib/api/auth/me";
+import { useMe } from "@/src/lib/api/auth";
+import Link from "next/link";
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const { data: user, refetch } = useGetUser();
+  const { data: user, refetch } = useMe();
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema) as Resolver<LoginSchema>,
@@ -46,9 +47,9 @@ export default function LoginPage() {
         toast.success("Login berhasil!");
         try {
           const redirectUser = await refetch().then((res) => res.data);
-          switch (redirectUser?.user_role_slug) {
+          switch (redirectUser?.role_slug) {
             case "administrator":
-              router.push("/products/access");
+              router.push("/products/manage");
               break;
             case "seller":
               router.push("/products/manage");
@@ -124,6 +125,12 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
+            <div>
+              Belum punya akun?{" "}
+              <span className="hover:underline text-primary">
+                <Link href="/register">Register</Link>
+              </span>
+            </div>
             <Button
               type="submit"
               className="cursor-pointer"

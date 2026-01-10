@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/src/components/ui/button";
-import { useRemoveCartItem } from "@/src/lib/api/carts/remove-cart.item";
-import { useUpdateCartItem } from "@/src/lib/api/carts/update-cart.item";
+import { useRemoveCartItem } from "@/src/lib/api/carts";
+import { useUpdateCartItem } from "@/src/lib/api/carts";
 import { CartItem } from "@/src/types/product";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";

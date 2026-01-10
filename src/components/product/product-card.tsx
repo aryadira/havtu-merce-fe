@@ -4,8 +4,8 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import { useAddToCart } from "@/src/lib/api/carts/add-to-cart";
-import { useGetUser } from "@/src/lib/api/auth/me";
+import { useAddToCart } from "@/src/lib/api/carts";
+import { useMe } from "@/src/lib/api/auth";
 
 interface ProductCardProps {
   product: ProductShop;
@@ -13,7 +13,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   // const { addItem } = useCart();
-  const { data: user } = useGetUser();
+  const { data: user } = useMe();
   const { mutate: addToCart } = useAddToCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {

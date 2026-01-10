@@ -36,7 +36,15 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: [
           ...state.items,
-          { product: action.product, item_qty: action.quantity || 1 },
+          {
+            item_id: `temp-${Date.now()}`, // Mock ID
+            cart_id: "guest-cart", // Mock Cart ID
+            product_id: action.product.id,
+            product: action.product,
+            item_qty: action.quantity || 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
         ],
       };
     }

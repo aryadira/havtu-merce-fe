@@ -7,9 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CartItemRow } from "./components/cart-item-row";
 import { OrderSummary } from "./components/order-summary";
-import { useGetCarts, getCartsQueryKey } from "@/src/lib/api/carts/get-carts";
+import { useGetCarts, getCartsQueryKey } from "@/src/lib/api/carts";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useCheckout } from "@/src/lib/api/orders/checkout";
+import { useCheckout } from "@/src/lib/api/orders";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 

@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/table";
-import { useGetOrder } from "@/src/lib/api/orders/get-order";
+import { useGetOrder } from "@/src/lib/api/orders";
 import { Badge } from "@/src/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, ShoppingBag } from "lucide-react";

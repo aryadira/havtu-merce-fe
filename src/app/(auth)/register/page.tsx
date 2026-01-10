@@ -17,7 +17,7 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 
-import { register, useRegister } from "@/src/lib/api/auth/register";
+import { register, useRegister } from "@/src/lib/api/auth";
 import { registerSchema, type RegisterSchema } from "./schema";
 
 export default function RegisterPage() {
@@ -28,7 +28,9 @@ export default function RegisterPage() {
     defaultValues: {
       fullname: "",
       email: "",
+      phone_number: "",
       password: "",
+      passwordConfirm: "",
     },
   });
 
@@ -94,6 +96,26 @@ export default function RegisterPage() {
                     />
                   </FormControl>
                   <FormDescription>Gunakan email terdaftar.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="phone_number"
+                      placeholder="Masukkan nomor telepon"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Gunakan nomor telepon terdaftar.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

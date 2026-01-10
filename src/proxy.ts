@@ -9,7 +9,7 @@ const PUBLIC_PATHS = new Set(["/login", "/register", "/unauthorized"]);
 const ROLE_ACCESS: Record<string, string[]> = {
   customer: ["/products/shop", "/cart"],
   seller: ["/products/manage", "/orders/manage"],
-  administrator: ["/products/access", "/dashboard/admin"],
+  administrator: ["/products/manage", "/products/access", "/dashboard/admin"],
 };
 
 export async function proxy(req: NextRequest) {

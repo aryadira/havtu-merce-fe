@@ -2,16 +2,32 @@
 
 import { ShoppingCart, Package, LogOut } from "lucide-react";
 import Link from "next/link";
-import { useCart } from "../context/cart-context";
-import { Button } from "./ui/button";
-import { useLogout } from "../lib/api/auth/logout";
 import { toast } from "sonner";
-import { useGetCarts } from "../lib/api/carts/get-carts";
-import { useGetUser } from "../lib/api/auth/me";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+
+import { useCart } from "../context/cart-context";
+import { useLogout } from "../lib/api/auth";
+import { useGetCarts } from "../lib/api/carts";
+import { useMe } from "../lib/api/auth";
+import { Skeleton } from "./ui/skeleton";
 
 export function AppHeader() {
-  const { data: user, isLoading: loadUser } = useGetUser();
-
+  const { data: user, isLoading: loadUser } = useMe();
   const { data: carts, isLoading: loadCarts } = useGetCarts();
   const itemCount =
     carts?.cart_items?.reduce((total, item) => total + item.item_qty, 0) || 0;
@@ -41,21 +57,11 @@ export function AppHeader() {
             className="flex items-center gap-2 font-semibold text-foreground hover:text-primary transition-colors"
           >
             <Package className="h-5 w-5" />
-            <span className="text-sm tracking-tight">MINIMAL.SHOP</span>
+            <span className="text-sm tracking-tight">MINSHOP</span>
           </Link>
-
-          <h1 className="text-sm">
-            {user?.profile.fullname} - {user?.email}
-          </h1>
         </div>
 
-        <nav className="flex items-center gap-6">
-          <Link
-            href="/orders"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
-          >
-            Orders
-          </Link>
+        <nav className="flex items-center gap-2">
           <Link href="/carts">
             <Button variant="ghost" size="sm" className="relative btn-bounce">
               <ShoppingCart className="h-4 w-4" />
@@ -66,14 +72,64 @@ export function AppHeader() {
               )}
             </Button>
           </Link>
-          <button
-            onClick={handleLogout}
-            disabled={isPending}
-            className="cursor-pointer flex w-full items-center gap-2 text-red-600 hover:text-red-700 transition"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>{isPending ? "Logging out..." : "Logout"}</span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost">
+                <Avatar>
+                  <AvatarImage
+                    src={user && user.profile.avatar}
+                    alt="@profile"
+                  />
+                  <AvatarFallback>
+                    {user?.profile.fullname.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex items-start flex-col">
+                  {loadUser ? (
+                    <>
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-20" />
+                    </>
+                  ) : (
+                    <>
+                      <div>{user?.profile.fullname}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {user?.email}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <Link href="/profile">
+                  <DropdownMenuItem className="cursor-pointer">
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/orders">
+                  <DropdownMenuItem className="cursor-pointer">
+                    Orders
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/settings">
+                  <DropdownMenuItem className="cursor-pointer">
+                    Settings
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                disabled={isPending}
+                className="cursor-pointer"
+              >
+                {isPending ? "Logging out..." : "Logout"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
       </div>
     </header>

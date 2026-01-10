@@ -2,7 +2,7 @@
 
 import { useCart } from "@/src/context/cart-context";
 import { Separator } from "@/src/components/ui/separator";
-import { useGetCarts } from "@/src/lib/api/carts/get-carts";
+import { useGetCarts } from "@/src/lib/api/carts";
 
 interface OrderSummaryProps {
   showDetails?: boolean;

@@ -26,7 +26,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { useCreateProduct } from "@/src/lib/api/products/manage/create-product.manage";
+import { useCreateProduct } from "@/src/lib/api/products";
 import { Control, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { createProductSchema, type CreateProductSchema } from "../../schema";

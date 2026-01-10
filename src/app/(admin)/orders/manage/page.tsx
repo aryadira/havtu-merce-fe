@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/src/components/ui/dialog";
 import { Input } from "@/src/components/ui/input";
 import {
   Table,
@@ -44,11 +44,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/table";
-import {
-  OrdersListResponse,
-  useGetOrdersManage,
-} from "@/src/lib/api/orders/get-orders-manage";
-import { OrderResponse } from "@/src/lib/api/orders/get-order";
+import { OrdersListResponse, useGetOrdersManage } from "@/src/lib/api/orders";
+import { OrderResponse } from "@/src/lib/api/orders";
 import { usePagination } from "@/src/hooks/use-pagination";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useRouter } from "next/navigation";
@@ -58,13 +55,15 @@ interface OrderDetailActionsProps {
   orderId: string;
 }
 
-export default function OrderList() {
+export const dynamic = "force-dynamic";
+
+// Main component with logic
+function OrderListContent() {
   const { page, limit, next, prev } = usePagination();
   const { data: orders, isLoading: loadOrders } = useGetOrdersManage(
     page,
     limit
   );
-  // const { data: user, isLoading: loadUser } = useGetUser();
 
   const ordersData = orders?.data ?? [];
   const meta = orders?.meta ?? { totalItems: 0, itemCount: 0 };
@@ -225,7 +224,16 @@ export default function OrderList() {
   );
 }
 
-export const columns: ColumnDef<OrderResponse>[] = [
+// Export a wrapper that includes Suspense
+export default function OrderList() {
+  return (
+    <React.Suspense fallback={<Skeleton className="w-full h-96" />}>
+      <OrderListContent />
+    </React.Suspense>
+  );
+}
+
+const columns: ColumnDef<OrderResponse>[] = [
   {
     accessorKey: "id",
     header: "Order ID",
@@ -309,7 +317,7 @@ export const columns: ColumnDef<OrderResponse>[] = [
   },
 ];
 
-export function OrderActions({ orderId }: OrderDetailActionsProps) {
+function OrderActions({ orderId }: OrderDetailActionsProps) {
   const router = useRouter();
   const [openMenu, setOpenMenu] = React.useState(false);
 

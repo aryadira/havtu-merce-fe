@@ -19,14 +19,16 @@ export const useAuthStore = create<AuthState>()(
       setTokens: (token, refreshToken) => {
         set({ token, refreshToken });
 
-        document.cookie = `token=${token}; path=/; max-age=3600;`;
-        document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800;`;
+        document.cookie = `token=${token}; path=/; max-age=3600; SameSite=Lax`;
+        document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`;
       },
 
       clearAuth: () => {
         set({ token: null, refreshToken: null });
-        document.cookie = "token=; Max-Age=0; path=/;";
-        document.cookie = "refreshToken=; Max-Age=0; path=/;";
+        document.cookie =
+          "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Max-Age=0";
+        document.cookie =
+          "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Max-Age=0";
       },
     }),
     {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetOrders } from "@/src/lib/api/orders/get-orders";
+import { useGetOrders } from "@/src/lib/api/orders";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import {

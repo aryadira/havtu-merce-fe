@@ -2,12 +2,16 @@
 
 import { Button } from "@/src/components/ui/button";
 import { ProductCard } from "@/src/components/product/product-card";
-import { useGetProductsShop } from "@/src/lib/api/products/shop/get-products.shop";
+import { useGetProductsShop } from "@/src/lib/api/products";
 import { usePagination } from "@/src/hooks/use-pagination";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { PackageX } from "lucide-react";
 
-export default function page() {
+import React from "react";
+
+export const dynamic = "force-dynamic";
+
+function ShopPageContent() {
   const { page, limit, next, prev } = usePagination();
   const { data: products, isLoading: loadProducts } = useGetProductsShop(
     page,
@@ -109,6 +113,14 @@ export default function page() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <React.Suspense fallback={<Skeleton className="w-full h-96" />}>
+      <ShopPageContent />
+    </React.Suspense>
   );
 }
 

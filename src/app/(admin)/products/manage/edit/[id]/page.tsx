@@ -12,8 +12,8 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { useGetProduct } from "@/src/lib/api/products/manage/get-product.manage";
-import { useUpdateProduct } from "@/src/lib/api/products/manage/update-product.manage";
+import { useGetProductManage } from "@/src/lib/api/products";
+import { useUpdateProduct } from "@/src/lib/api/products";
 import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createProductSchema, type CreateProductSchema } from "../../../schema";
@@ -30,21 +30,33 @@ export default function EditProductPage() {
     resolver: zodResolver(createProductSchema) as Resolver<CreateProductSchema>,
     defaultValues: {
       name: "",
-      price: 0,
-      stock: 0,
       description: "",
-      image_url: "",
+      product_category_id: "",
       is_active: true,
+      variations: [],
+      items: [],
+      images: [],
+      // price: 0, // Removed
+      // stock: 0, // Removed
     },
   });
 
-  const { data: product, isLoading: loadProduct } = useGetProduct({
-    id: productId,
-  });
+  const { data: product, isLoading: loadProduct } =
+    useGetProductManage(productId);
 
   useEffect(() => {
     if (product) {
-      form.reset(product);
+      // TODO: Map product detail to form schema correctly
+      // form.reset(product);
+      form.reset({
+        name: product.name,
+        description: product.description,
+        product_category_id: product.product_category_id,
+        is_active: product.is_active,
+        variations: [], // Placeholder
+        items: [], // Placeholder
+        images: [], // Placeholder
+      } as any);
     }
   }, [product, form]);
 
@@ -92,7 +104,7 @@ export default function EditProductPage() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="price"
               render={({ field }) => (
@@ -126,7 +138,7 @@ export default function EditProductPage() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={form.control}

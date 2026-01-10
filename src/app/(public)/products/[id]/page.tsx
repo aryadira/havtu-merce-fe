@@ -10,10 +10,10 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { useCart } from "@/src/context/cart-context";
-import { useGetProduct } from "@/src/lib/api/products/shop/get-product.shop";
+import { useGetProductShop } from "@/src/lib/api/products";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useCheckout } from "@/src/lib/api/orders/checkout";
+import { useCheckout } from "@/src/lib/api/orders";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -23,11 +23,8 @@ export default function ProductDetail() {
     data: product,
     isLoading: loadProduct,
     isError: errorProduct,
-  } = useGetProduct({
-    id: id as string,
-    queryConfig: {
-      enabled: !!id,
-    },
+  } = useGetProductShop(id as string, {
+    enabled: !!id,
   });
   const { addItem } = useCart();
   const { mutate: checkout, isPending: isCheckingOut } = useCheckout({
