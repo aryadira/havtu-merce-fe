@@ -1,150 +1,141 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Resolver } from "react-hook-form";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, Resolver } from 'react-hook-form';
+import { toast } from 'sonner';
 
-import { Button } from "@/src/components/ui/button";
+import { Button } from '@/src/components/ui/button';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/src/components/ui/form";
-import { Input } from "@/src/components/ui/input";
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/src/components/ui/form';
+import { Input } from '@/src/components/ui/input';
 
-import { useLogin } from "@/src/lib/api/auth";
-import { z } from "zod";
+import { useLogin } from '@/src/lib/api/auth';
+import { z } from 'zod';
 
-import { loginSchema } from "./schema";
-import { useMe } from "@/src/lib/api/auth";
-import Link from "next/link";
+import { loginSchema } from './schema';
+import { useMe } from '@/src/lib/api/auth';
+import Link from 'next/link';
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const { data: user, refetch } = useMe();
+    const router = useRouter();
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const { data: user, refetch } = useMe();
 
-  const form = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema) as Resolver<LoginSchema>,
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+    const form = useForm<LoginSchema>({
+        resolver: zodResolver(loginSchema) as Resolver<LoginSchema>,
+        defaultValues: {
+            email: '',
+            password: '',
+        },
+    });
 
-  const { mutate: login, isPending } = useLogin({
-    mutationConfig: {
-      onSuccess: async () => {
-        setIsRedirecting(true);
-        toast.success("Login berhasil!");
-        try {
-          const redirectUser = await refetch().then((res) => res.data);
-          switch (redirectUser?.role_slug) {
-            case "administrator":
-              router.push("/products/manage");
-              break;
-            case "seller":
-              router.push("/products/manage");
-              break;
-            case "customer":
-              router.push("/products/shop");
-              break;
-            default:
-              setIsRedirecting(false); // Should not happen if role exists
-              break;
-          }
-        } catch (error) {
-          console.error("Redirect error:", error);
-          setIsRedirecting(false);
-        }
-      },
-      onError: (error: any) => {
-        setIsRedirecting(false);
-        const { message } = error?.response?.data;
-        toast.error(message);
-      },
-    },
-  });
+    const { mutate: login, isPending } = useLogin({
+        mutationConfig: {
+            onSuccess: async () => {
+                setIsRedirecting(true);
+                toast.success('Login berhasil!');
+                try {
+                    const redirectUser = await refetch().then((res) => res.data);
+                    switch (redirectUser?.role_slug) {
+                        case 'administrator':
+                            router.push('/products/manage');
+                            break;
+                        case 'seller':
+                            router.push('/products/manage');
+                            break;
+                        case 'customer':
+                            router.push('/products/shop');
+                            break;
+                        default:
+                            setIsRedirecting(false); // Should not happen if role exists
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Redirect error:', error);
+                    setIsRedirecting(false);
+                }
+            },
+            onError: (error: any) => {
+                setIsRedirecting(false);
+                const { message } = error?.response?.data;
+                toast.error(message);
+            },
+        },
+    });
 
-  const handleLogin = async (data: LoginSchema) => {
-    login(data);
-  };
+    const handleLogin = async (data: LoginSchema) => {
+        login(data);
+    };
 
-  return (
-    <main className="w-full flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 border border-gray-200 rounded-2xl">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
-          Login
-        </h1>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleLogin)}
-            className="flex flex-col gap-4"
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Masukkan email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>Gunakan email terdaftar.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Masukkan password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>Minimal 6 karakter.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div>
-              Belum punya akun?{" "}
-              <span className="hover:underline text-primary">
-                <Link href="/register">Register</Link>
-              </span>
+    return (
+        <main className="w-full flex min-h-screen items-center justify-center bg-gray-50">
+            <div className="w-full max-w-md bg-white p-8 border border-gray-200 rounded-2xl">
+                <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Login</h1>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleLogin)} className="flex flex-col gap-4">
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="email"
+                                            placeholder="Masukkan email"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>Gunakan email terdaftar.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="password"
+                                            placeholder="Masukkan password"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>Minimal 6 karakter.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div>
+                            Belum punya akun?{' '}
+                            <span className="hover:underline text-primary">
+                                <Link href="/register">Register</Link>
+                            </span>
+                        </div>
+                        <Button
+                            type="submit"
+                            className="cursor-pointer"
+                            disabled={isPending || isRedirecting}
+                        >
+                            {isPending ? 'Loading...' : isRedirecting ? 'Redirecting...' : 'Login'}
+                        </Button>
+                    </form>
+                </Form>
             </div>
-            <Button
-              type="submit"
-              className="cursor-pointer"
-              disabled={isPending || isRedirecting}
-            >
-              {isPending
-                ? "Loading..."
-                : isRedirecting
-                ? "Redirecting..."
-                : "Login"}
-            </Button>
-          </form>
-        </Form>
-      </div>
-    </main>
-  );
+        </main>
+    );
 }

@@ -1,56 +1,55 @@
-import axios from "axios";
-import { useAuthStore } from "@/src/stores/auth.store";
-import Cookies from "js-cookie";
+import axios from 'axios';
+import { useAuthStore } from '@/src/stores/auth.store';
+import Cookies from 'js-cookie';
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 const api = axios.create({
-  baseURL: BASE_URL,
-  headers: { "Content-Type": "application/json" },
+    baseURL: BASE_URL,
+    headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use((config) => {
-  let token: string | undefined | null = useAuthStore.getState().token;
+    let token: string | undefined | null = useAuthStore.getState().token;
 
-  if (!token) {
-    token = Cookies.get("token") ?? null;
-  }
+    if (!token) {
+        token = Cookies.get('token') ?? null;
+    }
 
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
 });
 
 api.interceptors.response.use(
-  (res) => res,
-  async (error) => {
-    const originalRequest = error.config;
+    (res) => res,
+    async (error) => {
+        const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const refreshToken = useAuthStore.getState().refreshToken;
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const refreshToken = useAuthStore.getState().refreshToken;
 
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(`${BASE_URL}/auth/refresh-token`, {
-            refreshToken,
-          });
+            if (refreshToken) {
+                try {
+                    const { data } = await axios.post(`${BASE_URL}/auth/refresh-token`, {
+                        refreshToken,
+                    });
 
-          useAuthStore.getState().setTokens(data.token, data.refreshToken);
+                    useAuthStore.getState().setTokens(data.token, data.refreshToken);
 
-          originalRequest.headers.Authorization = `Bearer ${data.token}`;
-          return api(originalRequest);
-        } catch (err) {
-          useAuthStore.getState().clearAuth();
-          return Promise.reject(err);
+                    originalRequest.headers.Authorization = `Bearer ${data.token}`;
+                    return api(originalRequest);
+                } catch (err) {
+                    useAuthStore.getState().clearAuth();
+                    return Promise.reject(err);
+                }
+            } else {
+                useAuthStore.getState().clearAuth();
+            }
         }
-      } else {
-        useAuthStore.getState().clearAuth();
-      }
-    }
 
-    return Promise.reject(error);
-  }
+        return Promise.reject(error);
+    },
 );
 
 export default api;
