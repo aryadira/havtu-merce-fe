@@ -24,13 +24,15 @@ import { z } from 'zod';
 import { loginSchema } from './schema';
 import { useMe } from '@/src/lib/api/auth';
 import Link from 'next/link';
+import { handleApiError } from '@/src/lib/api-utils';
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
+
     const [isRedirecting, setIsRedirecting] = useState(false);
-    const { data: user, refetch } = useMe();
+    const { refetch } = useMe();
 
     const form = useForm<LoginSchema>({
         resolver: zodResolver(loginSchema) as Resolver<LoginSchema>,
@@ -68,8 +70,7 @@ export default function LoginPage() {
             },
             onError: (error: any) => {
                 setIsRedirecting(false);
-                const { message } = error?.response?.data;
-                toast.error(message);
+                handleApiError(error);
             },
         },
     });
@@ -80,7 +81,7 @@ export default function LoginPage() {
 
     return (
         <main className="w-full flex min-h-screen items-center justify-center bg-gray-50">
-            <div className="w-full max-w-md bg-white p-8 border border-gray-200 rounded-2xl">
+            <div className="w-full max-w-md bg-white p-8 border border-gray-200">
                 <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Login</h1>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleLogin)} className="flex flex-col gap-4">

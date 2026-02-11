@@ -24,6 +24,8 @@ export default function ProductDetail() {
         enabled: !!id,
     });
 
+    console.log(product);
+
     if (loadProduct) {
         return <p className="p-5">Loading...</p>;
     }
@@ -74,7 +76,7 @@ export default function ProductDetail() {
                                 {product.images.map((img) => (
                                     <div
                                         key={img.id}
-                                        className="shrink-0 w-48 h-32 rounded-md overflow-hidden border"
+                                        className="shrink-0 w-48 h-32  overflow-hidden border"
                                     >
                                         <img
                                             src={img.image_url}
@@ -103,7 +105,7 @@ export default function ProductDetail() {
                     {/* Variants / Items Section */}
                     <div>
                         <h3 className="text-lg font-medium mb-3">Product Items (SKUs)</h3>
-                        <div className="border rounded-md overflow-hidden">
+                        <div className="border  overflow-hidden">
                             <div className="grid grid-cols-12 bg-gray-50 p-3 text-sm font-medium text-gray-500 border-b">
                                 <div className="col-span-4">Variation / SKU</div>
                                 <div className="col-span-4">Configuration</div>

@@ -127,10 +127,10 @@ export default function ProfilePage() {
     if (isLoading) {
         return (
             <div className="container mx-auto py-10 px-4 space-y-8 animate-pulse max-w-6xl">
-                <div className="h-48 bg-muted rounded-xl w-full" />
+                <div className="h-48 bg-muted  w-full" />
                 <div className="flex flex-col md:flex-row gap-8">
-                    <div className="w-full md:w-64 h-64 bg-muted rounded-xl" />
-                    <div className="flex-1 h-96 bg-muted rounded-xl" />
+                    <div className="w-full md:w-64 h-64 bg-muted " />
+                    <div className="flex-1 h-96 bg-muted " />
                 </div>
             </div>
         );
@@ -248,21 +248,21 @@ export default function ProfilePage() {
                         <TabsList className="flex flex-row md:flex-col h-auto w-full bg-transparent p-0 gap-1 text-left items-stretch overflow-x-auto md:overflow-visible">
                             <TabsTrigger
                                 value="overview"
-                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm  transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
                                 <UserIcon className="w-4 h-4 mr-2" />
                                 Overview
                             </TabsTrigger>
                             <TabsTrigger
                                 value="addresses"
-                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm  transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
                                 <MapPinIcon className="w-4 h-4 mr-2" />
                                 Address Book
                             </TabsTrigger>
                             <TabsTrigger
                                 value="security"
-                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm  transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
                                 <ShieldIcon className="w-4 h-4 mr-2" />
                                 Security
@@ -503,7 +503,7 @@ export default function ProfilePage() {
                                 </CardHeader>
                                 <CardContent>
                                     {addresses.length === 0 ? (
-                                        <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed border-border">
+                                        <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-muted/20  border border-dashed border-border">
                                             <MapPinIcon className="w-10 h-10 mb-3 opacity-20" />
                                             <p className="text-sm font-medium">
                                                 No addresses found
@@ -531,7 +531,7 @@ export default function ProfilePage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-muted/10 transition-colors">
+                                    <div className="flex items-center justify-between p-4 border  bg-card hover:bg-muted/10 transition-colors">
                                         <div>
                                             <p className="font-medium">Password</p>
                                             <p className="text-sm text-muted-foreground">

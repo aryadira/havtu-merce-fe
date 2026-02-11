@@ -31,7 +31,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
     return (
         <div className="flex gap-4 py-4 border-b border-border last:border-0">
-            <div className="h-24 w-24 overflow-hidden rounded-md border border-border bg-muted">
+            <div className="h-24 w-24 overflow-hidden  border border-border bg-muted">
                 {item.product.image_url && (
                     <img
                         src={item.product.image_url}

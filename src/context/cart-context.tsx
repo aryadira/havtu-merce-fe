@@ -149,15 +149,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             value={{
                 items: state.items,
                 shippingInfo: state.shippingInfo,
+                itemCount,
+                subtotal,
+                shipping,
+                total,
                 addItem,
                 removeItem,
                 updateQuantity,
                 clearCart,
                 setShippingInfo,
-                itemCount,
-                subtotal,
-                shipping,
-                total,
             }}
         >
             {children}

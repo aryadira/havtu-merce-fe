@@ -128,7 +128,7 @@ function ProductListContent() {
                     <Button className="cursor-pointer">Add Product</Button>
                 </Link>
             </div>
-            <div className="overflow-hidden rounded-md border">
+            <div className="overflow-hidden  border">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (

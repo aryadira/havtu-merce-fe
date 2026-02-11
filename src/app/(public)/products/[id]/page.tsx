@@ -85,7 +85,7 @@ export default function ProductDetail() {
             <img
               src={product.image_url}
               alt={product.name}
-              className="w-full h-72 object-cover rounded-md"
+              className="w-full h-72 object-cover "
             />
           )} */}
 

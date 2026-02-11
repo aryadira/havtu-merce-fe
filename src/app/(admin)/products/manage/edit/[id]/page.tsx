@@ -29,6 +29,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter, useParams } from 'next/navigation';
 import { Plus, Trash, X } from 'lucide-react';
 import { useEffect } from 'react';
+import { handleApiError } from '@/src/lib/api-utils';
 
 export default function EditProductPage() {
     const router = useRouter();
@@ -108,8 +109,7 @@ export default function EditProductPage() {
             router.push(`/products/manage/${productId}`);
         },
         onError: (error: any) => {
-            const { message } = error?.response?.data || {};
-            toast.error(message || 'Failed to update product');
+            handleApiError(error, 'Failed to update product');
         },
     });
 
@@ -279,7 +279,7 @@ export default function EditProductPage() {
                         </CardHeader>
                         <CardContent>
                             {itemFields.length > 0 ? (
-                                <div className="border rounded-md">
+                                <div className="border ">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
@@ -417,7 +417,7 @@ function VariationRow({
     });
 
     return (
-        <div className="border p-4 rounded-md space-y-4 bg-gray-50/50">
+        <div className="border p-4  space-y-4 bg-gray-50/50">
             <div className="flex items-center justify-between">
                 <FormField
                     control={control}

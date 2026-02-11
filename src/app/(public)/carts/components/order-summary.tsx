@@ -16,7 +16,7 @@ export function OrderSummary({ showDetails = false }: OrderSummaryProps) {
         0;
 
     return (
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className=" border border-border bg-card p-6">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
             <div className="space-y-4">

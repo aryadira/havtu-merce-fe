@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
     return (
         <main className="w-full flex min-h-screen items-center justify-center bg-gray-50">
-            <div className="w-full max-w-md bg-white p-8 border border-gray-200 rounded-2xl">
+            <div className="w-full max-w-md bg-white p-8 border border-gray-200">
                 <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Register</h1>
                 <Form {...form}>
                     <form

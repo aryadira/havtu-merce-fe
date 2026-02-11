@@ -237,7 +237,7 @@ export default function CreateProduct() {
                         </CardHeader>
                         <CardContent>
                             {itemFields.length > 0 ? (
-                                <div className="border rounded-md">
+                                <div className="border ">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
@@ -375,7 +375,7 @@ function VariationRow({
     });
 
     return (
-        <div className="border p-4 rounded-md space-y-4 bg-gray-50/50">
+        <div className="border p-4  space-y-4 bg-gray-50/50">
             <div className="flex items-center justify-between">
                 <FormField
                     control={control}

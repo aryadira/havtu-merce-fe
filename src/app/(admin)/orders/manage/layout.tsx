@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <main className="w-full py-2 px-5">
             {!pathname.includes('/products/manage') && (
-                <div className="w-fit py-1 px-2 border hover:bg-gray-1 hover:scale-105 active:scale-95 border-gray-300 text-sm rounded-md cursor-pointer">
+                <div className="w-fit py-1 px-2 border hover:bg-gray-1 hover:scale-105 active:scale-95 border-gray-300 text-sm  cursor-pointer">
                     <Link href="/products/manage">&larr; Back</Link>
                 </div>
             )}

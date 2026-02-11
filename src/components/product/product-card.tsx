@@ -17,6 +17,8 @@ export function ProductCard({ productItem }: ProductCardProps) {
     const { data: user } = useMe();
     const { mutate: addToCart } = useAddToCart();
 
+    const { product, price, id } = productItem;
+
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -25,34 +27,34 @@ export function ProductCard({ productItem }: ProductCardProps) {
         //   product_id: productItems.id,
         //   item_qty: 1,
         // });
-        toast.success(`${productItem.product.name} added to cart`);
+        toast.success(`${product.name} added to cart`);
     };
 
     return (
-        <Link href={`/products/${productItem.product.id}`} className="group block">
-            <article className="product-card-hover rounded-lg border border-border bg-card overflow-hidden">
+        <Link href={`/products/${id}`} className="group block">
+            <article className="product-card-hover  border border-border bg-card overflow-hidden">
                 <div className="aspect-square overflow-hidden bg-muted">
-                    {productItem.product.images.length > 0 && (
+                    {product.images.length > 0 && (
                         <img
-                            src={productItem.product.images[0].image_url}
-                            alt={productItem.product.name}
+                            src={product.images[0].image_url}
+                            alt={product.name}
                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                     )}
                 </div>
                 <div className="p-4">
                     <h3 className="text-sm font-medium text-card-foreground mb-2 line-clamp-1">
-                        {productItem.product.name}
+                        {product.name}
                     </h3>
                     <h3 className="text-sm font-medium text-card-foreground mb-2 line-clamp-1">
-                        {productItem.product.user.fullname}
+                        {product.user.fullname}
                     </h3>
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-primary">
                             {new Intl.NumberFormat('id-ID', {
                                 style: 'currency',
                                 currency: 'IDR',
-                            }).format(productItem.price || 0)}
+                            }).format(price || 0)}
                         </span>
                         <Button
                             size="sm"

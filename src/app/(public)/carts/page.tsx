@@ -60,7 +60,7 @@ const Cart = () => {
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Cart Items */}
                 <div className="lg:col-span-2">
-                    <div className="rounded-lg border border-border bg-card p-4">
+                    <div className=" border border-border bg-card p-4">
                         {cartItems?.map((item) => (
                             <div key={item.item_id}>
                                 <CartItemRow item={item} />
@@ -97,7 +97,7 @@ const CartLoading = () => {
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Cart Items Column */}
                 <div className="lg:col-span-2">
-                    <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+                    <div className=" border border-border bg-card p-4 space-y-4">
                         {/* Simulate 3 cart items */}
                         {Array.from({ length: 3 }).map((_, i) => (
                             <div
@@ -105,7 +105,7 @@ const CartLoading = () => {
                                 className="flex gap-4 py-4 border-b border-border last:border-0"
                             >
                                 {/* Image Skeleton */}
-                                <Skeleton className="h-24 w-24 rounded-md shrink-0" />
+                                <Skeleton className="h-24 w-24  shrink-0" />
 
                                 <div className="flex flex-1 flex-col justify-between">
                                     {/* Title & Price */}
@@ -134,7 +134,7 @@ const CartLoading = () => {
 
                 {/* Order Summary Column */}
                 <div className="lg:col-span-1">
-                    <div className="rounded-lg border border-border bg-card p-6 space-y-4 sticky top-24">
+                    <div className=" border border-border bg-card p-6 space-y-4 sticky top-24">
                         <Skeleton className="h-6 w-1/3 mb-4" />
 
                         <div className="space-y-2">

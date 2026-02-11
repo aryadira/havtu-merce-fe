@@ -29,14 +29,14 @@ function ShopPageContent() {
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="space-y-4">
                             {/* Image Skeleton */}
-                            <Skeleton className="aspect-square w-full rounded-lg" />
+                            <Skeleton className="aspect-square w-full " />
                             {/* Content Skeleton */}
                             <div className="space-y-2">
                                 <Skeleton className="h-4 w-3/4" />
                                 <Skeleton className="h-3 w-1/2" />
                                 <div className="flex justify-between items-center pt-2">
                                     <Skeleton className="h-4 w-1/3" />
-                                    <Skeleton className="h-8 w-8 rounded-md" />
+                                    <Skeleton className="h-8 w-8 " />
                                 </div>
                             </div>
                         </div>
