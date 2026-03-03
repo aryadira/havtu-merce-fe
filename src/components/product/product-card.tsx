@@ -7,17 +7,17 @@ import { Button } from '../ui/button';
 import { useAddToCart } from '@/src/lib/api/carts';
 import { useMe } from '@/src/lib/api/auth';
 
-interface ProductCardProps {
+interface ProductShopProps {
     productItem: ProductShop;
 }
 
-export function ProductCard({ productItem }: ProductCardProps) {
+export function ProductCard({ productItem }: ProductShopProps) {
     // console.log(productItem)
     // const { addItem } = useCart();
     const { data: user } = useMe();
     const { mutate: addToCart } = useAddToCart();
 
-    const { product, price, id } = productItem;
+    const { id, name, image_url, price, shop_name, shop_city } = productItem;
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -27,28 +27,25 @@ export function ProductCard({ productItem }: ProductCardProps) {
         //   product_id: productItems.id,
         //   item_qty: 1,
         // });
-        toast.success(`${product.name} added to cart`);
+        toast.success(`${name} added to cart`);
     };
 
     return (
         <Link href={`/products/${id}`} className="group block">
             <article className="product-card-hover  border border-border bg-card overflow-hidden">
                 <div className="aspect-square overflow-hidden bg-muted">
-                    {product.images.length > 0 && (
-                        <img
-                            src={product.images[0].image_url}
-                            alt={product.name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                    )}
+                    <img
+                        src={image_url}
+                        alt={name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                 </div>
                 <div className="p-4">
-                    <h3 className="text-sm font-medium text-card-foreground mb-2 line-clamp-1">
-                        {product.name}
-                    </h3>
-                    <h3 className="text-sm font-medium text-card-foreground mb-2 line-clamp-1">
-                        {product.user.fullname}
-                    </h3>
+                    <h3 className="font-medium text-card-foreground line-clamp-1">{name}</h3>
+                    <div className="flex flex-col justify-between gap-1">
+                        <p className="text-sm text-card-foreground line-clamp-1">{shop_name}</p>
+                        <p className="text-sm text-gray-500 line-clamp-1">{shop_city}</p>
+                    </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-primary">
                             {new Intl.NumberFormat('id-ID', {

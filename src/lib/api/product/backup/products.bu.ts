@@ -5,7 +5,7 @@ import {
     ManageProductListResponse,
     ProductDetailResponse,
     ProductShop,
-    ShopProductListResponse,
+    ProductShopListResponse,
 } from '@/src/types/product';
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query';
 
@@ -156,7 +156,7 @@ export const useDeleteProduct = ({ page, limit, mutationConfig }: UseDeleteProdu
 
 // --- Shop: Get Products ---
 
-export const getProductsShop = async (page = 1, limit = 10): Promise<ShopProductListResponse> => {
+export const getProductsShop = async (page = 1, limit = 10): Promise<ProductShopListResponse> => {
     const response = await api.get('/products/shop', { params: { page, limit } });
     return response.data;
 };

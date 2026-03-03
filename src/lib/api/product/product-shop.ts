@@ -1,12 +1,12 @@
 import api from '../../axios';
 import { Pagination } from '@/src/types/pagination';
-import { ProductDetailResponse, ProductShop, ProductCategory } from '@/src/types/product';
+import { ProductDetailResponse, ProductCategory, ProductShopListResponse } from '@/src/types/product';
 
 export const productShop = {
     PRODUCT_SHOP_URL: '/products/shop',
 
     async getProducts(pagination: Partial<Pagination>) {
-        const response = await api.get<ProductShop>(this.PRODUCT_SHOP_URL, {
+        const response = await api.get<ProductShopListResponse>(this.PRODUCT_SHOP_URL, {
             params: pagination,
         });
         return response.data;

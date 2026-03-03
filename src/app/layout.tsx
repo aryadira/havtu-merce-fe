@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Inter_Tight } from 'next/font/google';
 import './globals.css';
 
 import { Toaster } from 'sonner';
@@ -11,6 +11,11 @@ const geistSans = Geist({
     variable: '--font-geist-sans',
     subsets: ['latin'],
 });
+
+const interTight = Inter_Tight({
+    variable: '--font-inter-tight',
+    subsets: ['latin'],
+})
 
 const geistMono = Geist_Mono({
     variable: '--font-geist-mono',
@@ -30,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+                className={`${interTight.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
             >
                 <QueryProvider>
                     <CartProvider>{children}</CartProvider>

@@ -1,19 +1,20 @@
 'use client';
 
+import React from 'react';
+
 import { Button } from '@/src/components/ui/button';
 import { ProductCard } from '@/src/components/product/product-card';
-import { useGetProductsShop } from '@/src/lib/api/product/backup/products.bu';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { PackageX } from 'lucide-react';
-
-import React from 'react';
+import { useProductShop } from '@/src/lib/hooks/product/product-shop';
 
 export const dynamic = 'force-dynamic';
 
 function ShopPageContent() {
     const { page, limit, next, prev } = usePagination();
-    const { data: products, isLoading: loadProducts } = useGetProductsShop(page, limit);
+    const { data: products, isLoading: loadProducts } = useProductShop(page, limit);
+
     const productData = products?.data || [];
     const meta = products?.meta;
 
@@ -76,11 +77,20 @@ function ShopPageContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {productData.map((productItem, index) => (
                     <div
-                        key={productItem.product.id}
+                        key={productItem.id}
                         className="fade-in"
                         style={{ animationDelay: `${index * 50}ms` }}
                     >
-                        <ProductCard productItem={productItem} />
+                        <ProductCard 
+                            productItem={{
+                                id: productItem.id,
+                                name: productItem?.name || 'Unknown Product',
+                                image_url: productItem.image_url || '',
+                                price: productItem.price || 0,
+                                shop_name: productItem.shop_name || 'Unknown Shop',
+                                shop_city: productItem.shop_city || 'Jakarta'
+                            }} 
+                        />
                     </div>
                 ))}
             </div>

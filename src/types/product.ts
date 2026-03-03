@@ -1,4 +1,5 @@
 import { Meta } from './meta';
+import { Shop } from './shop';
 
 export interface ProductConfiguration {
     product_item_id: string;
@@ -54,6 +55,7 @@ export interface ProductDetailResponse {
     name: string;
     description: string;
     is_active: boolean;
+    shop: Shop;
     items: ProductItem[];
     images: ProductImage[];
     category: ProductCategory;
@@ -109,7 +111,7 @@ export interface ManageProductListResponse {
     meta: Meta;
 }
 
-export interface ShopProductListResponse {
+export interface ProductShopListResponse {
     data: ProductShop[];
     meta: Meta;
 }
@@ -128,25 +130,11 @@ export interface ProductManage {
 
 export interface ProductShop {
     id: string;
-    sku: string;
+    name: string;
+    image_url: string;
     price: number;
-    qty_in_stock: number;
-    product: {
-        id: string;
-        name: string;
-        is_active: boolean;
-        images: [
-            {
-                id: string;
-                product_id: string;
-                image_url: string;
-            },
-        ];
-        user: {
-            id: string;
-            fullname: string;
-        };
-    };
+    shop_name: string;
+    shop_city: string;
 }
 
 export interface Cart {
