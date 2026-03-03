@@ -23,15 +23,39 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { useCreateProduct } from '@/src/lib/hooks/product/product-manage';
 import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { createProductSchema, type CreateProductSchema } from '../../schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash, X } from 'lucide-react';
 import { Badge } from '@/src/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/src/components/ui/select';
+import { useProductCategories } from '@/src/lib/hooks/product/product-shop';
 
 export default function CreateProduct() {
     const router = useRouter();
+    const { data: categories, isLoading: isLoadingCategories } = useProductCategories();
+
+    const categoryGroups = useMemo(() => {
+        if (!categories) return [];
+
+        const parents = categories.filter((c) => !c.parent_category_id);
+        const children = categories.filter((c) => c.parent_category_id);
+
+        return parents.map((parent) => ({
+            ...parent,
+            children: children.filter((c) => c.parent_category_id === parent.id),
+        }));
+    }, [categories]);
 
     const form = useForm<CreateProductSchema>({
         resolver: zodResolver(createProductSchema) as any,
@@ -169,12 +193,51 @@ export default function CreateProduct() {
                                 name="product_category_id"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Category ID</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Category UUID" {...field} />
-                                        </FormControl>
+                                        <FormLabel>Category</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            disabled={isLoadingCategories}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="w-full cursor-pointer">
+                                                    <SelectValue placeholder="Select a category" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {categoryGroups.map((group) => {
+                                                    if (group.children.length > 0) {
+                                                        return (
+                                                            <SelectGroup key={group.id}>
+                                                                <SelectLabel>
+                                                                    {group.category_name}
+                                                                </SelectLabel>
+                                                                {group.children.map((child) => (
+                                                                    <SelectItem
+                                                                        key={child.id}
+                                                                        value={child.id}
+                                                                        className="cursor-pointer"
+                                                                    >
+                                                                        {child.category_name}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectGroup>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <SelectItem
+                                                            key={group.id}
+                                                            value={group.id}
+                                                            className="cursor-pointer"
+                                                        >
+                                                            {group.category_name}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
                                         <FormDescription>
-                                            UUID of the product category
+                                            Select the product category
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
