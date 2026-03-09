@@ -1,8 +1,7 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
-import { useRemoveCartItem } from '@/src/lib/api/carts';
-import { useUpdateCartItem } from '@/src/lib/api/carts';
+import { useRemoveCartItem, useUpdateCartItem } from '@/src/lib/hooks/carts';
 import { CartItem } from '@/src/types/product';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
@@ -14,18 +13,14 @@ interface CartItemRowProps {
 
 export function CartItemRow({ item }: CartItemRowProps) {
     const { mutate: updateCartItem } = useUpdateCartItem({
-        mutationConfig: {
-            onSuccess: () => {
-                toast.success('Cart updated successfully');
-            },
+        onSuccess: () => {
+            toast.success('Cart updated successfully');
         },
     });
 
     const { mutate: removeCartItem } = useRemoveCartItem({
-        mutationConfig: {
-            onSuccess: () => {
-                toast.success('Cart removed successfully');
-            },
+        onSuccess: () => {
+            toast.success('Cart removed successfully');
         },
     });
 

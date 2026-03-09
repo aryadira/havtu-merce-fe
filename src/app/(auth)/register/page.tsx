@@ -17,7 +17,7 @@ import {
 } from '@/src/components/ui/form';
 import { Input } from '@/src/components/ui/input';
 
-import { register, useRegister } from '@/src/lib/api/auth';
+import { useRegister } from '@/src/lib/hooks/auth';
 import { registerSchema, type RegisterSchema } from './schema';
 
 export default function RegisterPage() {
@@ -35,15 +35,13 @@ export default function RegisterPage() {
     });
 
     const { mutate: register, isPending } = useRegister({
-        mutationConfig: {
-            onSuccess: () => {
-                toast.success('Akun berhasil dibuat!');
-                router.push('/login');
-            },
-            onError: (error: any) => {
-                const { message } = error?.response?.data;
-                toast.error(message);
-            },
+        onSuccess: () => {
+            toast.success('Akun berhasil dibuat!');
+            router.push('/login');
+        },
+        onError: (error: any) => {
+            const { message } = error?.response?.data;
+            toast.error(message);
         },
     });
 

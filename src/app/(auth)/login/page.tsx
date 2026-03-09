@@ -18,11 +18,10 @@ import {
 } from '@/src/components/ui/form';
 import { Input } from '@/src/components/ui/input';
 
-import { useLogin } from '@/src/lib/api/auth';
+import { useLogin, useMe } from '@/src/lib/hooks/auth';
 import { z } from 'zod';
-
 import { loginSchema } from './schema';
-import { useMe } from '@/src/lib/api/auth';
+
 import Link from 'next/link';
 import { handleApiError } from '@/src/lib/api-utils';
 
@@ -43,35 +42,33 @@ export default function LoginPage() {
     });
 
     const { mutate: login, isPending } = useLogin({
-        mutationConfig: {
-            onSuccess: async () => {
-                setIsRedirecting(true);
-                toast.success('Login berhasil!');
-                try {
-                    const redirectUser = await refetch().then((res) => res.data);
-                    switch (redirectUser?.role_slug) {
-                        case 'administrator':
-                            router.push('/products/manage');
-                            break;
-                        case 'seller':
-                            router.push('/products/manage');
-                            break;
-                        case 'customer':
-                            router.push('/products/shop');
-                            break;
-                        default:
-                            setIsRedirecting(false); // Should not happen if role exists
-                            break;
-                    }
-                } catch (error) {
-                    console.error('Redirect error:', error);
-                    setIsRedirecting(false);
+        onSuccess: async () => {
+            setIsRedirecting(true);
+            toast.success('Login berhasil!');
+            try {
+                const redirectUser = await refetch().then((res) => res.data);
+                switch (redirectUser?.role_slug) {
+                    case 'administrator':
+                        router.push('/products/manage');
+                        break;
+                    case 'seller':
+                        router.push('/products/manage');
+                        break;
+                    case 'customer':
+                        router.push('/products/shop');
+                        break;
+                    default:
+                        setIsRedirecting(false);
+                        break;
                 }
-            },
-            onError: (error: any) => {
+            } catch (error) {
+                console.error('Redirect error:', error);
                 setIsRedirecting(false);
-                handleApiError(error);
-            },
+            }
+        },
+        onError: (error: any) => {
+            setIsRedirecting(false);
+            handleApiError(error);
         },
     });
 

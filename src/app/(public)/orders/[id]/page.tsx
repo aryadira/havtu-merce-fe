@@ -17,7 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/src/components/ui/table';
-import { useGetOrder } from '@/src/lib/api/orders';
+import { useGetOrder } from '@/src/lib/hooks/orders';
 import { Badge } from '@/src/components/ui/badge';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, ShoppingBag } from 'lucide-react';
@@ -27,13 +27,7 @@ export default function OrderDetailPage() {
     const { id } = useParams();
     const router = useRouter();
 
-    const {
-        data: order,
-        isLoading,
-        isError,
-    } = useGetOrder({
-        orderId: id as string,
-    });
+    const { data: order, isLoading, isError } = useGetOrder(id as string);
 
     if (isLoading) {
         return (

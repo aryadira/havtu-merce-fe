@@ -10,7 +10,7 @@ import {
     CardTitle,
 } from '@/src/components/ui/card';
 import { Skeleton } from '@/src/components/ui/skeleton';
-import { useGetProductManage } from '@/src/lib/api/product/backup/products.bu';
+import { useProductDetails } from '@/src/lib/hooks/product/product-manage';
 import { useParams } from 'next/navigation';
 
 export default function ProductDetail() {
@@ -20,11 +20,7 @@ export default function ProductDetail() {
         data: product,
         isLoading: loadProduct,
         isError: errorProduct,
-    } = useGetProductManage(id as string, {
-        enabled: !!id,
-    });
-
-    console.log(product);
+    } = useProductDetails(id as string);
 
     if (loadProduct) {
         return <p className="p-5">Loading...</p>;

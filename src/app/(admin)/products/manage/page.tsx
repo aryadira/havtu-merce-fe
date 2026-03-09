@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { Suspense, useState } from 'react';
 import {
     ColumnFiltersState,
     flexRender,
@@ -29,10 +29,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/src/components/ui/table';
-import { useGetProductsManage } from '@/src/lib/api/product/backup/products.bu';
 import Link from 'next/link';
 import { usePagination } from '@/src/hooks/use-pagination';
-import { useMe } from '@/src/lib/api/auth';
+import { useMe } from '@/src/lib/hooks/auth';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { getColumns } from './columns';
 import { ProductItemResponse } from '@/src/types/product';
@@ -51,10 +50,10 @@ function ProductListContent() {
     const productsData = products?.data ?? [];
     const meta = products?.meta;
 
-    const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-    const [rowSelection, setRowSelection] = React.useState({});
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = useState({});
 
     const table = useReactTable<ProductItemResponse>({
         data: productsData ?? [],
@@ -222,8 +221,8 @@ function ProductListContent() {
 
 export default function ProductList() {
     return (
-        <React.Suspense fallback={<Skeleton className="w-full h-96" />}>
+        <Suspense fallback={<Skeleton className="w-full h-96" />}>
             <ProductListContent />
-        </React.Suspense>
+        </Suspense>
     );
 }

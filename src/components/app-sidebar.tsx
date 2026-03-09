@@ -14,7 +14,7 @@ import {
 import { SIDEBAR_NAVIGATIONS } from '../lib/constants/sidebar-navigation';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
-import { useLogout } from '../lib/api/auth';
+import { useLogout } from '../lib/hooks/auth';
 import { toast } from 'sonner';
 import { cn } from '@/src/lib/utils';
 
@@ -23,13 +23,11 @@ export function AppSidebar() {
     const router = useRouter();
 
     const { mutate: logout, isPending } = useLogout({
-        mutationConfig: {
-            onSuccess: () => {
-                toast.success('Logout berhasil!');
-            },
-            onError: () => {
-                toast.error('Gagal logout, coba lagi.');
-            },
+        onSuccess: () => {
+            toast.success('Logout berhasil!');
+        },
+        onError: () => {
+            toast.error('Gagal logout, coba lagi.');
         },
     });
 

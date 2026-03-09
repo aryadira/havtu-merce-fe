@@ -21,9 +21,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 import { useCart } from '../context/cart-context';
-import { useLogout } from '../lib/api/auth';
-import { useGetCarts } from '../lib/api/carts';
-import { useMe } from '../lib/api/auth';
+import { useLogout } from '../lib/hooks/auth';
+import { useGetCarts } from '../lib/hooks/carts';
+import { useMe } from '../lib/hooks/auth';
 import { Skeleton } from './ui/skeleton';
 
 export function AppHeader() {
@@ -32,13 +32,11 @@ export function AppHeader() {
     const itemCount = carts?.cart_items?.reduce((total, item) => total + item.item_qty, 0) || 0;
 
     const { mutate: logout, isPending } = useLogout({
-        mutationConfig: {
-            onSuccess: () => {
-                toast.success('Logout berhasil!');
-            },
-            onError: () => {
-                toast.error('Gagal logout, coba lagi.');
-            },
+        onSuccess: () => {
+            toast.success('Logout berhasil!');
+        },
+        onError: () => {
+            toast.error('Gagal logout, coba lagi.');
         },
     });
 

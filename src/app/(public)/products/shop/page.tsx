@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { Suspense } from 'react';
 
 import { Button } from '@/src/components/ui/button';
 import { ProductCard } from '@/src/components/product/product-card';
@@ -10,6 +10,14 @@ import { PackageX } from 'lucide-react';
 import { useProductShop } from '@/src/lib/hooks/product/product-shop';
 
 export const dynamic = 'force-dynamic';
+
+export default function ShopPage() {
+    return (
+        <Suspense fallback={<Skeleton className="w-full h-96" />}>
+            <ShopPageContent />
+        </Suspense>
+    );
+}
 
 function ShopPageContent() {
     const { page, limit, next, prev } = usePagination();
@@ -81,15 +89,15 @@ function ShopPageContent() {
                         className="fade-in"
                         style={{ animationDelay: `${index * 50}ms` }}
                     >
-                        <ProductCard 
+                        <ProductCard
                             productItem={{
                                 id: productItem.id,
                                 name: productItem?.name || 'Unknown Product',
                                 image_url: productItem.image_url || '',
                                 price: productItem.price || 0,
                                 shop_name: productItem.shop_name || 'Unknown Shop',
-                                shop_city: productItem.shop_city || 'Jakarta'
-                            }} 
+                                shop_city: productItem.shop_city || 'Jakarta',
+                            }}
                         />
                     </div>
                 ))}
@@ -121,14 +129,6 @@ function ShopPageContent() {
                 </div>
             </div>
         </section>
-    );
-}
-
-export default function ShopPage() {
-    return (
-        <React.Suspense fallback={<Skeleton className="w-full h-96" />}>
-            <ShopPageContent />
-        </React.Suspense>
     );
 }
 

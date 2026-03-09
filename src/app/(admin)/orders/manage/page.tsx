@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { Suspense, useState } from 'react';
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -44,8 +44,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/src/components/ui/table';
-import { OrdersListResponse, useGetOrdersManage } from '@/src/lib/api/orders';
-import { OrderResponse } from '@/src/lib/api/orders';
+import { useGetOrdersManage } from '@/src/lib/hooks/orders';
+import { OrdersListResponse, OrderResponse } from '@/src/types/order';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -65,10 +65,10 @@ function OrderListContent() {
     const ordersData = orders?.data ?? [];
     const meta = orders?.meta ?? { totalItems: 0, itemCount: 0 };
 
-    const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-    const [rowSelection, setRowSelection] = React.useState({});
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = useState({});
 
     const table = useReactTable<OrderResponse>({
         data: ordersData ?? [],
@@ -213,9 +213,9 @@ function OrderListContent() {
 // Export a wrapper that includes Suspense
 export default function OrderList() {
     return (
-        <React.Suspense fallback={<Skeleton className="w-full h-96" />}>
+        <Suspense fallback={<Skeleton className="w-full h-96" />}>
             <OrderListContent />
-        </React.Suspense>
+        </Suspense>
     );
 }
 
@@ -302,7 +302,7 @@ const columns: ColumnDef<OrderResponse>[] = [
 
 function OrderActions({ orderId }: OrderDetailActionsProps) {
     const router = useRouter();
-    const [openMenu, setOpenMenu] = React.useState(false);
+    const [openMenu, setOpenMenu] = useState(false);
 
     return (
         <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>

@@ -7,33 +7,28 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CartItemRow } from './components/cart-item-row';
 import { OrderSummary } from './components/order-summary';
-import { useGetCarts, getCartsQueryKey } from '@/src/lib/api/carts';
+import { useGetCarts } from '@/src/lib/hooks/carts';
 import { Skeleton } from '@/src/components/ui/skeleton';
-import { useCheckout } from '@/src/lib/api/orders';
+import { useCheckout } from '@/src/lib/hooks/orders';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
 
 const Cart = () => {
     const router = useRouter();
-    const queryClient = useQueryClient();
     const { data: carts, isLoading: loadCarts } = useGetCarts();
-
     const { mutate: checkout, isPending } = useCheckout({
-        mutationConfig: {
-            onSuccess: (data) => {
-                toast.success('Checkout successful!');
-                router.push(`/orders/${data.id}`);
-            },
-            onError: (error: any) => {
-                const { message } = error.response?.data || {};
-                toast.error(message || 'Checkout failed. Please try again.');
-            },
+        onSuccess: (data) => {
+            toast.success('Checkout successful!');
+            router.push(`/orders/${data.id}`);
+        },
+        onError: (error: any) => {
+            const { message } = error.response?.data || {};
+            toast.error(message || 'Checkout failed. Please try again.');
         },
     });
 
     const handleCheckout = () => {
-        // Empty array for cart checkout as per backend logic
-        checkout({ items: [] });
+        // Redirect to checkout page instead
+        router.push('/checkout');
     };
 
     const cartItems = carts?.cart_items;

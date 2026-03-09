@@ -23,7 +23,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/src/components/ui/dialog';
-import { useDeleteProduct } from '@/src/lib/api/product/backup/products.bu';
+import { useDeleteProduct } from '@/src/lib/hooks/product/product-manage';
 
 export interface ProductDetailActionsProps {
     productId: string;
@@ -86,20 +86,18 @@ export function ProductDeletion({
     limit: number;
 }) {
     const [open, setOpen] = React.useState(false);
+    const router = useRouter();
 
-    const { mutate: deleteProduct, isPending } = useDeleteProduct({
-        page,
-        limit,
-        mutationConfig: {
-            onSuccess: () => {
-                toast.success('Product deleted.');
-                setOpen(false);
-            },
+    const { mutate: deleteProduct, isPending } = useDeleteProduct(productId, {
+        onSuccess: () => {
+            toast.success('Product deleted.');
+            setOpen(false);
+            router.push(`/products/manage`);
         },
     });
 
-    const handleDeleteProduct = (id: string) => {
-        deleteProduct(id);
+    const handleDeleteProduct = () => {
+        deleteProduct();
     };
 
     return (
@@ -133,7 +131,7 @@ export function ProductDeletion({
 
                     <Button
                         variant="destructive"
-                        onClick={() => handleDeleteProduct(productId)}
+                        onClick={() => handleDeleteProduct()}
                         disabled={isPending}
                     >
                         {isPending ? 'Deleting...' : 'Yes, Delete'}

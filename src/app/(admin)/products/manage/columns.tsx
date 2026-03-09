@@ -42,15 +42,17 @@ export const getColumns = (page: number, limit: number): ColumnDef<ProductItemRe
         id: 'price',
         header: () => <div className="text-right">Price</div>,
         cell: ({ row }) => {
-            const items = row.original.items;
-            const price = items?.[0]?.price || 0;
+            const product = row.original;
+            const price = product.price ?? product.items?.[0]?.price ?? 0;
             const formatted = new Intl.NumberFormat('id-ID', {
                 style: 'currency',
                 currency: 'IDR',
             }).format(price);
 
             const hasMultiplePrices =
-                items?.length > 1 && new Set(items.map((i) => i.price)).size > 1;
+                product.items &&
+                product.items.length > 1 &&
+                new Set(product.items.map((i) => i.price)).size > 1;
 
             return (
                 <div className="text-right font-medium">
@@ -64,8 +66,11 @@ export const getColumns = (page: number, limit: number): ColumnDef<ProductItemRe
         id: 'stock',
         header: () => <div className="text-right">Total Stock</div>,
         cell: ({ row }) => {
-            const items = row.original.items;
-            const totalStock = items?.reduce((acc, item) => acc + item.qty_in_stock, 0) || 0;
+            const product = row.original;
+            const totalStock =
+                product.qty_in_stock ??
+                product.items?.reduce((acc, item) => acc + item.qty_in_stock, 0) ??
+                0;
             return <div className="text-right">{totalStock}</div>;
         },
     },

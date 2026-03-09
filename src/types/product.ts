@@ -67,21 +67,20 @@ export interface ProductDetailResponse {
 export interface ProductItemResponse {
     id: string;
     name: string;
+    price: number;
+    qty_in_stock: number;
+    image_url: string | null;
     is_active: boolean;
-    items: [
-        {
-            id: string;
-            price: number;
-            qty_in_stock: number;
-        },
-    ];
-    images: [
-        {
-            id: string;
-            image_url: string;
-        },
-    ];
-    category: {
+    items?: {
+        id: string;
+        price: number;
+        qty_in_stock: number;
+    }[];
+    images?: {
+        id: string;
+        image_url: string;
+    }[];
+    category?: {
         id: string;
         category_name: string;
     };

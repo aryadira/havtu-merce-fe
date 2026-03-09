@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMe } from '@/src/lib/api/auth';
+import { useMe } from '@/src/lib/hooks/auth';
 import {
     User as UserIcon,
     Mail as MailIcon,
@@ -44,12 +44,14 @@ import { useForm } from 'react-hook-form';
 import { profileSchema, UserGender, type ProfileSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/src/components/ui/input';
-import { useUpdateUser } from '@/src/lib/api/users';
+import { useUpdateUser, useGetProfile } from '@/src/lib/hooks/user';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
-    const { data: user, isLoading } = useMe();
+    const { data: user, isLoading } = useGetProfile();
     const [isEditing, setIsEditing] = useState(false);
+
+    console.log(user);
 
     const form = useForm<ProfileSchema>({
         resolver: zodResolver(profileSchema),
@@ -127,7 +129,7 @@ export default function ProfilePage() {
     if (isLoading) {
         return (
             <div className="container mx-auto py-10 px-4 space-y-8 animate-pulse max-w-6xl">
-                <div className="h-48 bg-muted  w-full" />
+                <div className="h-48 bg-muted w-full" />
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-full md:w-64 h-64 bg-muted " />
                     <div className="flex-1 h-96 bg-muted " />
@@ -158,7 +160,7 @@ export default function ProfilePage() {
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
                         <div className="relative group">
-                            <Avatar className="w-32 h-32 border-4 border-background shadow-xl ring-2 ring-border/20">
+                            <Avatar className="w-32 h-32 border-4 border-background ring-2 ring-border/20">
                                 <AvatarImage src={(profile as any).avatar} alt={profile.fullname} />
                                 <AvatarFallback className="text-3xl font-bold bg-primary/10 text-primary">
                                     {getInitials(profile.fullname)}
@@ -248,21 +250,21 @@ export default function ProfilePage() {
                         <TabsList className="flex flex-row md:flex-col h-auto w-full bg-transparent p-0 gap-1 text-left items-stretch overflow-x-auto md:overflow-visible">
                             <TabsTrigger
                                 value="overview"
-                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm  transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
                                 <UserIcon className="w-4 h-4 mr-2" />
                                 Overview
                             </TabsTrigger>
                             <TabsTrigger
                                 value="addresses"
-                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm  transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
                                 <MapPinIcon className="w-4 h-4 mr-2" />
                                 Address Book
                             </TabsTrigger>
                             <TabsTrigger
                                 value="security"
-                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm  transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
                                 <ShieldIcon className="w-4 h-4 mr-2" />
                                 Security
@@ -272,7 +274,7 @@ export default function ProfilePage() {
 
                     <div className="w-5xl flex-1 space-y-6">
                         <TabsContent value="overview" className="mt-0 space-y-6">
-                            <Card className="border-border/60 shadow-sm overflow-hidden">
+                            <Card className="border-border/60 overflow-hidden">
                                 <CardHeader>
                                     <CardTitle>Personal Information</CardTitle>
                                     <CardDescription>
@@ -451,7 +453,7 @@ export default function ProfilePage() {
                                 </Form>
                             </Card>
 
-                            <Card className="border-border/60 shadow-sm">
+                            <Card className="border-border/60">
                                 <CardHeader>
                                     <CardTitle>Account Information</CardTitle>
                                 </CardHeader>
@@ -491,7 +493,7 @@ export default function ProfilePage() {
                         </TabsContent>
 
                         <TabsContent value="addresses" className="mt-0">
-                            <Card className="border-border/60 shadow-sm">
+                            <Card className="border-border/60">
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <div>
                                         <CardTitle>Address Book</CardTitle>
@@ -523,7 +525,7 @@ export default function ProfilePage() {
                         </TabsContent>
 
                         <TabsContent value="security" className="mt-0">
-                            <Card className="border-border/60 shadow-sm">
+                            <Card className="border-border/60">
                                 <CardHeader>
                                     <CardTitle>Security Settings</CardTitle>
                                     <CardDescription>
@@ -531,7 +533,7 @@ export default function ProfilePage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 border  bg-card hover:bg-muted/10 transition-colors">
+                                    <div className="flex items-center justify-between p-4 border bg-card hover:bg-muted/10 transition-colors">
                                         <div>
                                             <p className="font-medium">Password</p>
                                             <p className="text-sm text-muted-foreground">

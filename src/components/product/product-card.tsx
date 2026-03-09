@@ -4,8 +4,8 @@ import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { useAddToCart } from '@/src/lib/api/carts';
-import { useMe } from '@/src/lib/api/auth';
+import { useAddToCart } from '@/src/lib/hooks/carts';
+import { useMe } from '@/src/lib/hooks/auth';
 
 interface ProductShopProps {
     productItem: ProductShop;
