@@ -10,6 +10,7 @@ export const getOrdersManageQueryKey = (page: number, limit: number) => [
     limit,
 ];
 export const getOrderQueryKey = (orderId: string) => ['order', orderId];
+export const getShippingMethodsQueryKey = () => ['shipping-methods'];
 
 // --- Hooks ---
 export const useGetOrders = (page: number, limit: number) => {
@@ -46,5 +47,12 @@ export const useCheckout = (options?: {
             options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),
+    });
+};
+
+export const useGetShippingMethods = () => {
+    return useQuery({
+        queryKey: getShippingMethodsQueryKey(),
+        queryFn: () => orders.getShippingMethods(),
     });
 };
