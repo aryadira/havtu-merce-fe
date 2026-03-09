@@ -35,7 +35,7 @@ export function ProductCard({ productItem }: ProductShopProps) {
             <article className="product-card-hover  border border-border bg-card overflow-hidden">
                 <div className="aspect-square overflow-hidden bg-muted">
                     <img
-                        src={image_url}
+                        src={image_url || '/images/no-image.png'}
                         alt={name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />

@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 
 import { Button } from '@/src/components/ui/button';
 import { ProductCard } from '@/src/components/product/product-card';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { PackageX } from 'lucide-react';
@@ -50,7 +50,7 @@ function ShopPageContent() {
         },
     };
 
-    console.log(productData);
+    // console.log(productData);
 
     // Loading state
     if (loadProducts) {
@@ -106,27 +106,31 @@ function ShopPageContent() {
             <ProductHeader />
 
             {/* Product grid */}
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"
-            >
-                {productData.map((productItem) => (
-                    <motion.div key={productItem.id} variants={itemVariants}>
-                        <ProductCard
-                            productItem={{
-                                id: productItem.id,
-                                name: productItem?.name || 'Unknown Product',
-                                image_url: productItem.image_url || '',
-                                price: productItem.price || 0,
-                                shop_name: productItem.shop_name || 'Unknown Shop',
-                                shop_city: productItem.shop_city || 'Jakarta',
-                            }}
-                        />
-                    </motion.div>
-                ))}
-            </motion.div>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={page}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"
+                >
+                    {productData.map((productItem) => (
+                        <motion.div key={productItem.id} variants={itemVariants}>
+                            <ProductCard
+                                productItem={{
+                                    id: productItem.id,
+                                    name: productItem?.name || 'Unknown Product',
+                                    image_url: productItem.image_url || '',
+                                    price: productItem.price || 0,
+                                    shop_name: productItem.shop_name || 'Unknown Shop',
+                                    shop_city: productItem.shop_city || 'Jakarta',
+                                }}
+                            />
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </AnimatePresence>
 
             <div className="flex items-center justify-end space-x-2 py-4 mt-8">
                 <div className="text-muted-foreground flex-1 text-sm">
