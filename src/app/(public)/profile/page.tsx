@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMe } from '@/src/lib/hooks/auth';
 import {
@@ -11,6 +11,8 @@ import {
     Shield as ShieldIcon,
     Calendar as CalendarIcon,
 } from 'lucide-react';
+
+import { PageLoader } from '@/src/components/ui/page-loader';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar';
 import { Button } from '@/src/components/ui/button';
@@ -48,10 +50,16 @@ import { useUpdateUser, useGetProfile } from '@/src/lib/hooks/user';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
+    return (
+        <Suspense fallback={<PageLoader message="Memuat profil..." />}>
+            <ProfilePageContent />
+        </Suspense>
+    );
+}
+
+function ProfilePageContent() {
     const { data: user, isLoading } = useGetProfile();
     const [isEditing, setIsEditing] = useState(false);
-
-    console.log(user);
 
     const form = useForm<ProfileSchema>({
         resolver: zodResolver(profileSchema),
@@ -127,15 +135,7 @@ export default function ProfilePage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="container mx-auto py-10 px-4 space-y-8 animate-pulse max-w-6xl">
-                <div className="h-48 bg-muted w-full" />
-                <div className="flex flex-col md:flex-row gap-8">
-                    <div className="w-full md:w-64 h-64 bg-muted " />
-                    <div className="flex-1 h-96 bg-muted " />
-                </div>
-            </div>
-        );
+        return <PageLoader message="Memuat profil..." />;
     }
 
     if (!user) {
@@ -153,10 +153,41 @@ export default function ProfilePage() {
     const addresses = (profile as any).addresses || [];
     const createdAt = (user as any).createdAt;
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: 'spring',
+                stiffness: 100,
+                damping: 20,
+            } as const,
+        },
+    };
+
     return (
-        <div className="max-w-5xl min-h-screen pb-20">
+        <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="max-w-5xl min-h-screen pb-20"
+        >
             {/* Header Section */}
-            <div className="bg-background border-b border-border/40 pb-8 pt-10">
+            <motion.div
+                variants={itemVariants}
+                className="bg-background border-b border-border/40 pb-8 pt-10"
+            >
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
                         <div className="relative group">
@@ -241,10 +272,10 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Main Content */}
-            <div className="container mx-auto px-4 max-w-6xl mt-8">
+            <motion.div variants={itemVariants} className="container mx-auto px-4 max-w-6xl mt-8">
                 <Tabs defaultValue="overview" className="flex flex-col md:flex-row gap-8">
                     <aside className="w-full md:w-64  space-y-2">
                         <TabsList className="flex flex-row md:flex-col h-auto w-full bg-transparent p-0 gap-1 text-left items-stretch overflow-x-auto md:overflow-visible">
@@ -274,282 +305,312 @@ export default function ProfilePage() {
 
                     <div className="w-5xl flex-1 space-y-6">
                         <TabsContent value="overview" className="mt-0 space-y-6">
-                            <Card className="border-border/60 overflow-hidden">
-                                <CardHeader>
-                                    <CardTitle>Personal Information</CardTitle>
-                                    <CardDescription>
-                                        Manage your personal details and public profile info.
-                                    </CardDescription>
-                                </CardHeader>
-                                <Form {...form}>
-                                    <form>
-                                        <CardContent className="space-y-6">
-                                            <motion.div
-                                                animate={{
-                                                    backgroundColor: isEditing
-                                                        ? 'var(--muted-foreground-opacity-5)' // Subtle highlight
-                                                        : 'transparent',
-                                                    opacity: isEditing ? 1 : 0.9,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                                            >
-                                                <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="fullname"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Full Name</FormLabel>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        {...field}
-                                                                        type="text"
-                                                                        placeholder="Ubah nama lengkap"
-                                                                        disabled={!isEditing}
-                                                                        className="transition-all duration-300"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="username"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Username</FormLabel>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        {...field}
-                                                                        type="text"
-                                                                        placeholder="Ubah username"
-                                                                        disabled={!isEditing}
-                                                                        className="transition-all duration-300"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="email"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Email Address</FormLabel>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        {...field}
-                                                                        type="email"
-                                                                        placeholder="Ubah email"
-                                                                        disabled={!isEditing}
-                                                                        className="transition-all duration-300"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="phone_number"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Phone Number</FormLabel>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        {...field}
-                                                                        type="tel"
-                                                                        placeholder="Ubah nomor telepon"
-                                                                        disabled={!isEditing}
-                                                                        className="transition-all duration-300"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="birthdate"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Birthdate</FormLabel>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        {...field}
-                                                                        type="date"
-                                                                        placeholder="Ubah tanggal lahir"
-                                                                        disabled={!isEditing}
-                                                                        className="transition-all duration-300"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="gender"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Gender</FormLabel>
-                                                                <Select
-                                                                    disabled={!isEditing}
-                                                                    onValueChange={field.onChange}
-                                                                    value={
-                                                                        isEditing
-                                                                            ? field.value
-                                                                            : user.profile.gender
-                                                                    }
-                                                                >
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="space-y-6"
+                            >
+                                <Card className="border-border/60 overflow-hidden">
+                                    <CardHeader>
+                                        <CardTitle>Personal Information</CardTitle>
+                                        <CardDescription>
+                                            Manage your personal details and public profile info.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <Form {...form}>
+                                        <form>
+                                            <CardContent className="space-y-6">
+                                                <motion.div
+                                                    animate={{
+                                                        backgroundColor: isEditing
+                                                            ? 'var(--muted-foreground-opacity-5)' // Subtle highlight
+                                                            : 'transparent',
+                                                        opacity: isEditing ? 1 : 0.9,
+                                                    }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                                >
+                                                    <div className="space-y-2">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="fullname"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Full Name</FormLabel>
                                                                     <FormControl>
-                                                                        <SelectTrigger className="transition-all duration-300">
-                                                                            <SelectValue placeholder="Select gender" />
-                                                                        </SelectTrigger>
+                                                                        <Input
+                                                                            {...field}
+                                                                            type="text"
+                                                                            placeholder="Ubah nama lengkap"
+                                                                            disabled={!isEditing}
+                                                                            className="transition-all duration-300"
+                                                                        />
                                                                     </FormControl>
-                                                                    <SelectContent>
-                                                                        <SelectItem
-                                                                            value={UserGender.MALE}
-                                                                        >
-                                                                            Male
-                                                                        </SelectItem>
-                                                                        <SelectItem
-                                                                            value={
-                                                                                UserGender.FEMALE
-                                                                            }
-                                                                        >
-                                                                            Female
-                                                                        </SelectItem>
-                                                                        <SelectItem
-                                                                            value={
-                                                                                UserGender.PREFER_NOT_TO_SAY
-                                                                            }
-                                                                        >
-                                                                            Prefer not to say
-                                                                        </SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                            </motion.div>
-                                        </CardContent>
-                                    </form>
-                                </Form>
-                            </Card>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="username"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Username</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            type="text"
+                                                                            placeholder="Ubah username"
+                                                                            disabled={!isEditing}
+                                                                            className="transition-all duration-300"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="email"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Email Address
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            type="email"
+                                                                            placeholder="Ubah email"
+                                                                            disabled={!isEditing}
+                                                                            className="transition-all duration-300"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="phone_number"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Phone Number
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            type="tel"
+                                                                            placeholder="Ubah nomor telepon"
+                                                                            disabled={!isEditing}
+                                                                            className="transition-all duration-300"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="birthdate"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Birthdate</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            type="date"
+                                                                            placeholder="Ubah tanggal lahir"
+                                                                            disabled={!isEditing}
+                                                                            className="transition-all duration-300"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="gender"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Gender</FormLabel>
+                                                                    <Select
+                                                                        disabled={!isEditing}
+                                                                        onValueChange={
+                                                                            field.onChange
+                                                                        }
+                                                                        value={
+                                                                            isEditing
+                                                                                ? field.value
+                                                                                : user.profile
+                                                                                      .gender
+                                                                        }
+                                                                    >
+                                                                        <FormControl>
+                                                                            <SelectTrigger className="transition-all duration-300">
+                                                                                <SelectValue placeholder="Select gender" />
+                                                                            </SelectTrigger>
+                                                                        </FormControl>
+                                                                        <SelectContent>
+                                                                            <SelectItem
+                                                                                value={
+                                                                                    UserGender.MALE
+                                                                                }
+                                                                            >
+                                                                                Male
+                                                                            </SelectItem>
+                                                                            <SelectItem
+                                                                                value={
+                                                                                    UserGender.FEMALE
+                                                                                }
+                                                                            >
+                                                                                Female
+                                                                            </SelectItem>
+                                                                            <SelectItem
+                                                                                value={
+                                                                                    UserGender.PREFER_NOT_TO_SAY
+                                                                                }
+                                                                            >
+                                                                                Prefer not to say
+                                                                            </SelectItem>
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                </motion.div>
+                                            </CardContent>
+                                        </form>
+                                    </Form>
+                                </Card>
 
-                            <Card className="border-border/60">
-                                <CardHeader>
-                                    <CardTitle>Account Information</CardTitle>
-                                </CardHeader>
-                                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-1">
-                                        <span className="text-sm text-muted-foreground">
-                                            User ID
-                                        </span>
-                                        <p className="font-mono text-xs text-foreground/80 truncate bg-muted/30 p-1.5 rounded w-fit max-w-full">
-                                            {user.id}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-sm text-muted-foreground">Role</span>
-                                        <p className="text-sm font-medium capitalize">
-                                            {user.role_slug}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-sm text-muted-foreground">
-                                            Created At
-                                        </span>
-                                        <p className="text-sm font-medium">
-                                            {formatDate(createdAt)}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-sm text-muted-foreground">
-                                            Last Updated
-                                        </span>
-                                        <p className="text-sm font-medium">
-                                            {formatDate((user as any).updatedAt)}
-                                        </p>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                <Card className="border-border/60">
+                                    <CardHeader>
+                                        <CardTitle>Account Information</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-1">
+                                            <span className="text-sm text-muted-foreground">
+                                                User ID
+                                            </span>
+                                            <p className="font-mono text-xs text-foreground/80 truncate bg-muted/30 p-1.5 rounded w-fit max-w-full">
+                                                {user.id}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-sm text-muted-foreground">
+                                                Role
+                                            </span>
+                                            <p className="text-sm font-medium capitalize">
+                                                {user.role_slug}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-sm text-muted-foreground">
+                                                Created At
+                                            </span>
+                                            <p className="text-sm font-medium">
+                                                {formatDate(createdAt)}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-sm text-muted-foreground">
+                                                Last Updated
+                                            </span>
+                                            <p className="text-sm font-medium">
+                                                {formatDate((user as any).updatedAt)}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         </TabsContent>
 
                         <TabsContent value="addresses" className="mt-0">
-                            <Card className="border-border/60">
-                                <CardHeader className="flex flex-row items-center justify-between">
-                                    <div>
-                                        <CardTitle>Address Book</CardTitle>
-                                        <CardDescription>
-                                            Manage your shipping and billing addresses.
-                                        </CardDescription>
-                                    </div>
-                                    <Button size="sm">Add New Address</Button>
-                                </CardHeader>
-                                <CardContent>
-                                    {addresses.length === 0 ? (
-                                        <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-muted/20  border border-dashed border-border">
-                                            <MapPinIcon className="w-10 h-10 mb-3 opacity-20" />
-                                            <p className="text-sm font-medium">
-                                                No addresses found
-                                            </p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Add an address to speed up checkout.
-                                            </p>
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                            >
+                                <Card className="border-border/60">
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <div>
+                                            <CardTitle>Address Book</CardTitle>
+                                            <CardDescription>
+                                                Manage your shipping and billing addresses.
+                                            </CardDescription>
                                         </div>
-                                    ) : (
-                                        <div className="grid gap-4">
-                                            {/* Placeholder for address list item */}
-                                            <p>Addresses functionality needed</p>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                        <Button size="sm">Add New Address</Button>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {addresses.length === 0 ? (
+                                            <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-muted/20  border border-dashed border-border">
+                                                <MapPinIcon className="w-10 h-10 mb-3 opacity-20" />
+                                                <p className="text-sm font-medium">
+                                                    No addresses found
+                                                </p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Add an address to speed up checkout.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid gap-4">
+                                                {/* Placeholder for address list item */}
+                                                <p>Addresses functionality needed</p>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         </TabsContent>
 
                         <TabsContent value="security" className="mt-0">
-                            <Card className="border-border/60">
-                                <CardHeader>
-                                    <CardTitle>Security Settings</CardTitle>
-                                    <CardDescription>
-                                        Update your password and security preferences.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 border bg-card hover:bg-muted/10 transition-colors">
-                                        <div>
-                                            <p className="font-medium">Password</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Last updated recently
-                                            </p>
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                            >
+                                <Card className="border-border/60">
+                                    <CardHeader>
+                                        <CardTitle>Security Settings</CardTitle>
+                                        <CardDescription>
+                                            Update your password and security preferences.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="flex items-center justify-between p-4 border bg-card hover:bg-muted/10 transition-colors">
+                                            <div>
+                                                <p className="font-medium">Password</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Last updated recently
+                                                </p>
+                                            </div>
+                                            <Button variant="outline" size="sm">
+                                                Update
+                                            </Button>
                                         </div>
-                                        <Button variant="outline" size="sm">
-                                            Update
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         </TabsContent>
                     </div>
                 </Tabs>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }

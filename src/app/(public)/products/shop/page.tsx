@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 
 import { Button } from '@/src/components/ui/button';
 import { ProductCard } from '@/src/components/product/product-card';
+import { motion } from 'framer-motion';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { PackageX } from 'lucide-react';
@@ -25,6 +26,29 @@ function ShopPageContent() {
 
     const productData = products?.data || [];
     const meta = products?.meta;
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.05,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: 'spring',
+                stiffness: 100,
+                damping: 20,
+            } as const,
+        },
+    };
 
     console.log(productData);
 
@@ -82,13 +106,14 @@ function ShopPageContent() {
             <ProductHeader />
 
             {/* Product grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {productData.map((productItem, index) => (
-                    <div
-                        key={productItem.id}
-                        className="fade-in"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                    >
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"
+            >
+                {productData.map((productItem) => (
+                    <motion.div key={productItem.id} variants={itemVariants}>
                         <ProductCard
                             productItem={{
                                 id: productItem.id,
@@ -99,9 +124,9 @@ function ShopPageContent() {
                                 shop_city: productItem.shop_city || 'Jakarta',
                             }}
                         />
-                    </div>
+                    </motion.div>
                 ))}
-            </div>
+            </motion.div>
 
             <div className="flex items-center justify-end space-x-2 py-4 mt-8">
                 <div className="text-muted-foreground flex-1 text-sm">
@@ -133,8 +158,13 @@ function ShopPageContent() {
 }
 
 const ProductHeader = () => (
-    <div className="mb-10 slide-up">
+    <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-10 shadow-sm p-4 bg-muted/5 rounded-lg border border-border/50"
+    >
         <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">Products</h1>
         <p className="text-sm text-muted-foreground">Curated selection of minimal essentials</p>
-    </div>
+    </motion.div>
 );

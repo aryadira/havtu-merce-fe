@@ -10,22 +10,13 @@ import { useCheckout } from '@/src/lib/hooks/orders';
 import { useProductShopDetail } from '@/src/lib/hooks/product/product-shop';
 import { Minus, Plus, MessageSquare, Heart, Share2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/src/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { PageLoader } from '@/src/components/ui/page-loader';
 
 export default function ProductDetail() {
     return (
-        <Suspense fallback={<ProductLoader />}>
+        <Suspense fallback={<PageLoader message="Memuat produk..." />}>
             <ProductDetailContent />
         </Suspense>
-    );
-}
-
-function ProductLoader() {
-    return (
-        <div className="flex flex-col justify-center items-center min-h-[70vh] gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-gray-500 font-medium animate-pulse">Memuat produk...</p>
-        </div>
     );
 }
 
@@ -73,7 +64,7 @@ function ProductDetailContent() {
     });
 
     if (loadProduct) {
-        return <ProductLoader />;
+        return <PageLoader message="Memuat produk..." />;
     }
 
     if (errorProduct || !product) {

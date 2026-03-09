@@ -6,8 +6,10 @@ import { useCheckout } from '@/src/lib/hooks/orders';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useProductShopDetail } from '@/src/lib/hooks/product/product-shop';
-import { MapPin, ShieldCheck, TicketPercent, ChevronRight, Check } from 'lucide-react';
+import { MapPin, ShieldCheck, TicketPercent, ChevronRight, Check, Loader2 } from 'lucide-react';
 import { Card } from '@/src/components/ui/card';
+import { motion } from 'framer-motion';
+import { PageLoader } from '@/src/components/ui/page-loader';
 
 function CheckoutContent() {
     const searchParams = useSearchParams();
@@ -90,12 +92,31 @@ function CheckoutContent() {
     };
 
     if (isLoading) {
-        return (
-            <div className="p-8 text-center min-h-screen text-gray-500 pt-20">
-                Loading Checkout...
-            </div>
-        );
+        return <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />;
     }
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: 'spring',
+                stiffness: 100,
+                damping: 20,
+            } as const,
+        },
+    };
 
     const price = selectedItem?.price || 0;
     const subtotal = price * quantity;
@@ -113,13 +134,26 @@ function CheckoutContent() {
     const mainImage = product?.images?.[0]?.image_url || '';
 
     return (
-        <div className="min-h-screen pt-8 pb-32">
+        <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="min-h-screen pt-8 pb-32"
+        >
             <div className="max-w-6xl mx-auto px-4">
-                <h1 className="text-2xl font-semibold mb-6 text-gray-800">Checkout</h1>
+                <motion.h1
+                    variants={itemVariants}
+                    className="text-2xl font-semibold mb-6 text-gray-800"
+                >
+                    Checkout
+                </motion.h1>
 
                 <div className="flex flex-col lg:flex-row gap-6 items-start relative">
                     {/* Left Column */}
-                    <div className="w-full lg:w-2/3 flex flex-col gap-5">
+                    <motion.div
+                        variants={itemVariants}
+                        className="w-full lg:w-2/3 flex flex-col gap-5"
+                    >
                         {/* Alamat Pengiriman */}
                         <Card className="p-5 border border-gray-200">
                             <h2 className="text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-4">
@@ -274,10 +308,13 @@ function CheckoutContent() {
                                 </div>
                             </div>
                         </Card>
-                    </div>
+                    </motion.div>
 
                     {/* Right Column: Summaries & Payment */}
-                    <div className="w-full lg:w-1/3 flex flex-col gap-4 sticky top-24">
+                    <motion.div
+                        variants={itemVariants}
+                        className="w-full lg:w-1/3 flex flex-col gap-4 sticky top-24"
+                    >
                         {/* Payment Methods */}
                         <Card className="p-5 border border-gray-200">
                             <div className="flex justify-between items-center mb-4">
@@ -410,10 +447,10 @@ function CheckoutContent() {
                                 .
                             </p>
                         </Card>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
 
@@ -421,9 +458,7 @@ export default function CheckoutPage() {
     return (
         <Suspense
             fallback={
-                <div className="p-8 text-center min-h-screen pt-20 text-gray-500">
-                    Loading Checkout...
-                </div>
+                <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />
             }
         >
             <CheckoutContent />
