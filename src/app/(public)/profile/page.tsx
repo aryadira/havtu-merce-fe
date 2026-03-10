@@ -46,8 +46,19 @@ import { useForm } from 'react-hook-form';
 import { profileSchema, UserGender, type ProfileSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/src/components/ui/input';
-import { useUpdateUser, useGetProfile } from '@/src/lib/hooks/user';
+import { useUpdateUser, useGetProfile, useCreateAddress } from '@/src/lib/hooks/user';
 import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+} from '@/src/components/ui/dialog';
+import { Checkbox } from '@/src/components/ui/checkbox';
+import { addressSchema, type AddressSchema } from './schema';
+import { Textarea } from '@/src/components/ui/textarea';
 
 export default function ProfilePage() {
     return (
@@ -122,6 +133,30 @@ function ProfilePageContent() {
         });
     };
 
+    const { mutate: createAddress, isPending: isAddingAddress } = useCreateAddress({
+        onSuccess: () => {
+            toast.success('Address added successfully');
+            setIsAddAddressOpen(false);
+            addressForm.reset();
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Failed to add address');
+        },
+    });
+
+    const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
+    const addressForm = useForm<AddressSchema>({
+        resolver: zodResolver(addressSchema),
+        defaultValues: {
+            address: '',
+            city: '',
+            province: '',
+            postal_code: '',
+            country: 'Indonesia',
+            is_default: false,
+        },
+    });
+
     const handleUpdateProfile = async () => {
         if (!user) return;
         try {
@@ -132,6 +167,10 @@ function ProfilePageContent() {
         } catch (error) {
             console.error('Error updating profile:', error);
         }
+    };
+
+    const handleAddAddress = (data: AddressSchema) => {
+        createAddress(data);
     };
 
     if (isLoading) {
@@ -555,7 +594,160 @@ function ProfilePageContent() {
                                                 Manage your shipping and billing addresses.
                                             </CardDescription>
                                         </div>
-                                        <Button size="sm">Add New Address</Button>
+                                        <Dialog open={isAddAddressOpen} onOpenChange={setIsAddAddressOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button size="sm">Add New Address</Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-[500px]">
+                                                <DialogHeader>
+                                                    <DialogTitle>Add New Address</DialogTitle>
+                                                </DialogHeader>
+                                                <Form {...addressForm}>
+                                                    <form
+                                                        onSubmit={addressForm.handleSubmit(
+                                                            handleAddAddress,
+                                                        )}
+                                                        className="space-y-4 py-4"
+                                                    >
+                                                        <FormField
+                                                            control={addressForm.control}
+                                                            name="address"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Detailed Address
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Textarea
+                                                                            {...field}
+                                                                            value={field.value as string}
+                                                                            placeholder="Street name, building number, etc."
+                                                                            className="min-h-[80px]"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <FormField
+                                                                control={addressForm.control}
+                                                                name="city"
+                                                                render={({ field }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>City</FormLabel>
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                {...field}
+                                                                                value={field.value as string}
+                                                                                placeholder="City"
+                                                                            />
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                            <FormField
+                                                                control={addressForm.control}
+                                                                name="province"
+                                                                render={({ field }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>
+                                                                            Province
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                {...field}
+                                                                                value={field.value as string}
+                                                                                placeholder="Province"
+                                                                            />
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <FormField
+                                                                control={addressForm.control}
+                                                                name="postal_code"
+                                                                render={({ field }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>
+                                                                            Postal Code
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                {...field}
+                                                                                value={field.value as string}
+                                                                                placeholder="Postal Code"
+                                                                            />
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                            <FormField
+                                                                control={addressForm.control}
+                                                                name="country"
+                                                                render={({ field }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>
+                                                                            Country
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                {...field}
+                                                                                value={field.value as string}
+                                                                                placeholder="Country"
+                                                                            />
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <FormField
+                                                            control={addressForm.control}
+                                                            name="is_default"
+                                                            render={({ field }) => (
+                                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                                                    <FormControl>
+                                                                        <Checkbox
+                                                                            checked={!!field.value}
+                                                                            onCheckedChange={
+                                                                                field.onChange
+                                                                            }
+                                                                        />
+                                                                    </FormControl>
+                                                                    <div className="space-y-1 leading-none">
+                                                                        <FormLabel>
+                                                                            Set as default address
+                                                                        </FormLabel>
+                                                                        <FormDescription>
+                                                                            This address will be
+                                                                            used for your future
+                                                                            checkouts.
+                                                                        </FormDescription>
+                                                                    </div>
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <DialogFooter>
+                                                            <Button
+                                                                type="submit"
+                                                                disabled={isAddingAddress}
+                                                                className="w-full sm:w-auto"
+                                                            >
+                                                                {isAddingAddress
+                                                                    ? 'Adding...'
+                                                                    : 'Add Address'}
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </form>
+                                                </Form>
+                                            </DialogContent>
+                                        </Dialog>
                                     </CardHeader>
                                     <CardContent>
                                         {addresses.length === 0 ? (
@@ -570,8 +762,46 @@ function ProfilePageContent() {
                                             </div>
                                         ) : (
                                             <div className="grid gap-4">
-                                                {/* Placeholder for address list item */}
-                                                <p>Addresses functionality needed</p>
+                                                {addresses.map((addr: any, idx: number) => (
+                                                    <div
+                                                        key={addr.id || idx}
+                                                        className="flex items-start justify-between p-4 border rounded-lg bg-card hover:bg-muted/10 transition-colors"
+                                                    >
+                                                        <div className="flex gap-4">
+                                                            <div className="mt-1 p-2 bg-primary/10 rounded-full">
+                                                                <MapPinIcon className="w-4 h-4 text-primary" />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-semibold text-sm">
+                                                                        {addr.is_default
+                                                                            ? 'Default Address'
+                                                                            : `Address ${idx + 1}`}
+                                                                    </span>
+                                                                    {addr.is_default && (
+                                                                        <Badge
+                                                                            variant="secondary"
+                                                                            className="text-[10px] h-4 bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                        >
+                                                                            Primary
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-sm text-foreground/80">
+                                                                    {addr.address}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {addr.city}, {addr.province},{' '}
+                                                                    {addr.postal_code},{' '}
+                                                                    {addr.country}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <Button variant="ghost" size="sm">
+                                                            Edit
+                                                        </Button>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </CardContent>

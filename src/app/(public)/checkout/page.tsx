@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { PageLoader } from '@/src/components/ui/page-loader';
 import { useGetProfile } from '@/src/lib/hooks/user';
 import { useGetShippingMethods } from '@/src/lib/hooks/shipping-method';
+import { useUserPaymentMethods } from '@/src/lib/hooks/user/user-payment-method';
 
 export default function CheckoutPage() {
     return (
@@ -56,10 +57,11 @@ function CheckoutContent() {
     const { data: userData, isLoading: isLoadingUser } = useGetProfile();
     const { data: shippingMethods, isLoading: isLoadingShipping } = useGetShippingMethods();
     const { data: product, isLoading: isLoadingProduct } = useProductShopDetail(pid as string);
+    const { data: userPaymentMethods, isLoading: isLoadingPayment } = useUserPaymentMethods();
 
     const user = userData;
     const addresses = user?.profile?.addresses || [];
-    const paymentMethods = user?.payment_methods || [];
+    const paymentMethodsList = userPaymentMethods || [];
     const shippingList = shippingMethods || [];
 
     // State for selections
@@ -82,10 +84,10 @@ function CheckoutContent() {
     }, [shippingList, shippingMethodId]);
 
     useEffect(() => {
-        if (paymentMethods.length > 0 && !userPaymentMethodId) {
-            setUserPaymentMethodId(paymentMethods[0].id);
+        if (paymentMethodsList.length > 0 && !userPaymentMethodId) {
+            setUserPaymentMethodId(paymentMethodsList[0].id);
         }
-    }, [paymentMethods, userPaymentMethodId]);
+    }, [paymentMethodsList, userPaymentMethodId]);
 
     // UI states matching screenshot
     const [extraProtection, setExtraProtection] = useState(true);
@@ -157,7 +159,7 @@ function CheckoutContent() {
     };
     const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-    if (isLoadingUser || isLoadingShipping || isLoadingProduct) {
+    if (isLoadingUser || isLoadingShipping || isLoadingProduct || isLoadingPayment) {
         return <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />;
     }
 
@@ -437,22 +439,27 @@ function CheckoutContent() {
                             </div>
 
                             <div className="flex flex-col gap-4">
-                                {paymentMethods.map((pm: any) => (
+                                {paymentMethodsList.map((pm: any) => (
                                     <div
                                         key={pm.id}
-                                        className="flex justify-between items-center cursor-pointer"
+                                        className="flex justify-between items-center cursor-pointer p-3 border border-transparent hover:border-emerald-200 hover:bg-emerald-50/30 rounded-lg transition-all"
                                         onClick={() => setUserPaymentMethodId(pm.id)}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-6 bg-gray-100 rounded flex items-center justify-center text-[10px] font-bold text-emerald-700 border border-gray-200">
+                                            <div className="w-12 h-8 bg-white rounded flex items-center justify-center text-[10px] font-bold text-emerald-700 border border-gray-200">
                                                 {pm.provider}
                                             </div>
-                                            <span className="text-[15px]">
-                                                {pm.provider} Transfer
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-[14px] font-semibold">
+                                                    Transfer {pm.provider}
+                                                </span>
+                                                <span className="text-[12px] text-gray-500">
+                                                    {pm.account_number} • {pm.account_holder}
+                                                </span>
+                                            </div>
                                         </div>
                                         <div
-                                            className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${
+                                            className={`w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center ${
                                                 userPaymentMethodId === pm.id
                                                     ? 'border-emerald-500 bg-emerald-500'
                                                     : 'border-gray-300 bg-white'
@@ -464,9 +471,9 @@ function CheckoutContent() {
                                         </div>
                                     </div>
                                 ))}
-                                {paymentMethods.length === 0 && (
-                                    <p className="text-sm text-gray-400 italic">
-                                        No payment methods found. Add one in your profile.
+                                {paymentMethodsList.length === 0 && (
+                                    <p className="text-sm text-gray-400 italic p-2">
+                                        Metode pembayaran belum ditambahkan. Silakan tambah di profil.
                                     </p>
                                 )}
                             </div>

@@ -125,7 +125,7 @@ export default function OrderDetailPage() {
                     <CardHeader>
                         <CardTitle>Order Items</CardTitle>
                         <CardDescription>
-                            You have {order.order_items.length} items in this order
+                            You have {order.order_lines.length} items in this order
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -139,7 +139,7 @@ export default function OrderDetailPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {order.order_items.map((item) => (
+                                {order.order_lines.map((item) => (
                                     <TableRow key={item.product_id}>
                                         <TableCell>
                                             <div className="font-medium">{item.product.name}</div>

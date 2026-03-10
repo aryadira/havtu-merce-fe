@@ -33,7 +33,7 @@ export interface OrderResponse {
     total_amount: number;
     created_at: string;
     updated_at: string;
-    order_items: OrderItemResponse[];
+    order_lines: OrderItemResponse[];
 }
 
 export interface OrdersListResponse {

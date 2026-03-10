@@ -18,4 +18,9 @@ export const user = {
         const response = await api.put(`${this.USER_URL}`, data);
         return response.data;
     },
+
+    async createAddress(data: any) {
+        const response = await api.post(`${this.USER_URL}/addresses`, data);
+        return response.data;
+    },
 };

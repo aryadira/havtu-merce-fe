@@ -146,7 +146,7 @@ export default function OrderListPage() {
                                                 {formatDate(order.created_at)}
                                             </span>
                                             <span className="text-xs text-muted-foreground">
-                                                {order.order_items.length} items
+                                                {order.order_lines.length} items
                                             </span>
                                         </div>
                                     </TableCell>
