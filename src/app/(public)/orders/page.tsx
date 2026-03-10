@@ -1,6 +1,6 @@
 'use client';
 
-import { useGetOrders } from '@/src/lib/hooks/orders';
+import { useGetOrders } from '@/src/lib/hooks/order';
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
 import {

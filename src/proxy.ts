@@ -7,7 +7,7 @@ const PUBLIC_PATHS = new Set(['/login', '/register', '/unauthorized']);
 
 // Role-based routes
 const ROLE_ACCESS: Record<string, string[]> = {
-    customer: ['/products/shop', '/cart'],
+    buyer: ['/products/shop', '/cart'],
     seller: ['/products/manage', '/orders/manage'],
     administrator: ['/products/manage', '/products/access', '/dashboard/admin'],
 };

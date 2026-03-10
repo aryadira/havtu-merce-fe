@@ -54,7 +54,7 @@ export default function LoginPage() {
                     case 'seller':
                         router.push('/products/manage');
                         break;
-                    case 'customer':
+                    case 'buyer':
                         router.push('/products/shop');
                         break;
                     default:

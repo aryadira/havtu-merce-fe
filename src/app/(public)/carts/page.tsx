@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CartItemRow } from './components/cart-item-row';
 import { OrderSummary } from './components/order-summary';
-import { useGetCarts } from '@/src/lib/hooks/carts';
+import { useGetCarts } from '@/src/lib/hooks/cart';
 import { Skeleton } from '@/src/components/ui/skeleton';
-import { useCheckout } from '@/src/lib/hooks/orders';
+import { useCheckout } from '@/src/lib/hooks/order';
 import { toast } from 'sonner';
 
 const Cart = () => {

@@ -22,10 +22,5 @@ export const orders = {
     async checkout(data: CheckoutOrderDto) {
         const response = await api.post(`${this.ORDERS_URL}/checkout`, data);
         return response.data;
-    },
-
-    async getShippingMethods() {
-        const response = await api.get(`${this.ORDERS_URL}/shipping-methods`);
-        return response.data;
-    },
+    }
 };

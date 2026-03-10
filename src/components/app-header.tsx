@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 import { useCart } from '../context/cart-context';
 import { useLogout } from '../lib/hooks/auth';
-import { useGetCarts } from '../lib/hooks/carts';
+import { useGetCarts } from '../lib/hooks/cart';
 import { useMe } from '../lib/hooks/auth';
 import { Skeleton } from './ui/skeleton';
 

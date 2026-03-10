@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { carts, AddToCartDTO, UpdateCartDTO } from '../../api/carts/carts';
+import { carts, AddToCartDTO, UpdateCartDTO } from '../../api/cart/cart';
 
 // --- Query Keys ---
 export const getCartsQueryKey = () => ['carts'];

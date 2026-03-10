@@ -44,7 +44,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/src/components/ui/table';
-import { useGetOrdersManage } from '@/src/lib/hooks/orders';
+import { useGetOrdersManage } from '@/src/lib/hooks/order';
 import { OrdersListResponse, OrderResponse } from '@/src/types/order';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';

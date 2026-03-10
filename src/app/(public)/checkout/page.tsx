@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { Button } from '@/src/components/ui/button';
-import { useCheckout } from '@/src/lib/hooks/orders';
+import { useCheckout } from '@/src/lib/hooks/order';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useProductShopDetail } from '@/src/lib/hooks/product/product-shop';
@@ -11,7 +11,19 @@ import { Card } from '@/src/components/ui/card';
 import { motion } from 'framer-motion';
 import { PageLoader } from '@/src/components/ui/page-loader';
 import { useGetProfile } from '@/src/lib/hooks/user';
-import { useGetShippingMethods } from '@/src/lib/hooks/orders';
+import { useGetShippingMethods } from '@/src/lib/hooks/shipping-method';
+
+export default function CheckoutPage() {
+    return (
+        <Suspense
+            fallback={
+                <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />
+            }
+        >
+            <CheckoutContent />
+        </Suspense>
+    );
+}
 
 function CheckoutContent() {
     const searchParams = useSearchParams();
@@ -20,7 +32,25 @@ function CheckoutContent() {
     const pid = searchParams.get('pid');
     const itemId = searchParams.get('itemId');
     const qtyParam = searchParams.get('qty');
-    const quantity = parseInt(qtyParam || '1');
+
+    const [quantity, setQuantity] = useState(1);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    useEffect(() => {
+        const storedQty = sessionStorage.getItem('checkout_qty');
+        if (storedQty) {
+            setQuantity(parseInt(storedQty));
+        } else if (qtyParam) {
+            setQuantity(parseInt(qtyParam));
+        }
+        setIsInitialized(true);
+    }, [qtyParam]);
+
+    useEffect(() => {
+        if (isInitialized) {
+            sessionStorage.setItem('checkout_qty', quantity.toString());
+        }
+    }, [quantity, isInitialized]);
 
     // Fetch real data
     const { data: userData, isLoading: isLoadingUser } = useGetProfile();
@@ -117,8 +147,29 @@ function CheckoutContent() {
             ?.map((c: any) => c.product_variation_option?.value)
             .join(', ') || '';
 
+    const handleIncrease = () => {
+        const maxStock = selectedItem?.qty_in_stock || 999;
+        if (quantity < maxStock) {
+            setQuantity((prev) => prev + 1);
+        } else {
+            toast.error(`Stok maksimal adalah ${maxStock}`);
+        }
+    };
+    const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
     if (isLoadingUser || isLoadingShipping || isLoadingProduct) {
         return <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />;
+    }
+
+    if (!product) {
+        return (
+            <div className="flex flex-col justify-center items-center min-h-[60vh]">
+                <p className="text-gray-500">Produk tidak ditemukan atau gagal dimuat.</p>
+                <Button onClick={() => router.back()} className="mt-4">
+                    Kembali
+                </Button>
+            </div>
+        );
     }
 
     const containerVariants = {
@@ -146,7 +197,7 @@ function CheckoutContent() {
 
     const price = selectedItem?.price || 0;
     const subtotal = price * quantity;
-    const shippingCost = 11500;
+    const shippingCost = shippingList.find((s: any) => s.id === shippingMethodId)?.price || 0;
     const protectionCost = extraProtection ? 84500 : 0;
     const insuranceCost = shippingInsurance ? 52300 : 0;
     const discount = 20000;
@@ -240,8 +291,7 @@ function CheckoutContent() {
                                         </div>
                                         <div className="flex flex-col gap-1">
                                             <p className="text-[15px] text-gray-800 leading-snug line-clamp-2">
-                                                {product?.name ||
-                                                    '[ BEST SELLER ] Apple iPhone 17...'}
+                                                {product?.name}
                                             </p>
                                             <p className="text-sm text-gray-500">{variantName}</p>
                                         </div>
@@ -250,7 +300,10 @@ function CheckoutContent() {
                                     <div className="flex flex-col items-end gap-3 shrink-0">
                                         <p className="font-bold text-base">{formatPrice(price)}</p>
                                         <div className="flex items-center border border-gray-300 py-1 px-2 h-8">
-                                            <button className="text-gray-400 hover:text-gray-600 leading-none">
+                                            <button
+                                                onClick={handleDecrease}
+                                                className="text-gray-400 hover:text-gray-600 leading-none"
+                                            >
                                                 <span className="text-lg">−</span>
                                             </button>
                                             <input
@@ -259,7 +312,10 @@ function CheckoutContent() {
                                                 readOnly
                                                 className="w-8 text-center text-sm font-medium outline-none bg-transparent"
                                             />
-                                            <button className="text-emerald-500 hover:text-emerald-600 leading-none text-lg">
+                                            <button
+                                                onClick={handleIncrease}
+                                                className="text-emerald-500 hover:text-emerald-600 leading-none text-lg"
+                                            >
                                                 +
                                             </button>
                                         </div>
@@ -286,23 +342,43 @@ function CheckoutContent() {
                                 {/* Shipping Options */}
                                 <div className="border border-gray-200 overflow-hidden mt-2">
                                     {shippingList.length > 0 ? (
-                                        <div className="p-4 bg-white flex justify-between items-center cursor-pointer hover:bg-gray-50">
-                                            <div className="flex flex-col">
-                                                <p className="font-semibold text-[15px]">
-                                                    {shippingList.find(
-                                                        (s: any) => s.id === shippingMethodId,
-                                                    )?.provider || 'Select Shipping'}{' '}
-                                                    (Rp11.500)
-                                                </p>
-                                                <p className="text-[13px] text-gray-500 mt-0.5">
-                                                    Estimasi tiba 2 - 4 hari
-                                                </p>
-                                            </div>
-                                            <ChevronRight className="w-5 h-5 text-gray-400" />
+                                        <div className="flex flex-col">
+                                            {shippingList.map((s: any) => (
+                                                <div
+                                                    key={s.id}
+                                                    onClick={() => setShippingMethodId(s.id)}
+                                                    className={`p-4 flex justify-between items-center cursor-pointer border-b last:border-b-0 transition-colors ${
+                                                        shippingMethodId === s.id
+                                                            ? 'bg-emerald-50/50'
+                                                            : 'bg-white hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <p className="font-semibold text-[15px]">
+                                                            {s.provider} ({formatPrice(s.price)})
+                                                        </p>
+                                                        <p className="text-[13px] text-gray-500 mt-0.5">
+                                                            {s.description ||
+                                                                'Estimasi tiba 2 - 4 hari'}
+                                                        </p>
+                                                    </div>
+                                                    <div
+                                                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                                            shippingMethodId === s.id
+                                                                ? 'border-emerald-500 bg-emerald-500'
+                                                                : 'border-gray-300'
+                                                        }`}
+                                                    >
+                                                        {shippingMethodId === s.id && (
+                                                            <div className="w-2 h-2 rounded-full bg-white" />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : (
                                         <p className="p-4 text-sm text-gray-500">
-                                            No shipping methods available.
+                                            Metode pengiriman tidak tersedia.
                                         </p>
                                     )}
 
@@ -485,17 +561,5 @@ function CheckoutContent() {
                 </div>
             </div>
         </motion.div>
-    );
-}
-
-export default function CheckoutPage() {
-    return (
-        <Suspense
-            fallback={
-                <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />
-            }
-        >
-            <CheckoutContent />
-        </Suspense>
     );
 }

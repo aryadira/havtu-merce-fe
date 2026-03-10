@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/src/components/ui/card';
 import { useCart } from '@/src/context/cart-context';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useCheckout } from '@/src/lib/hooks/orders';
+import { useCheckout } from '@/src/lib/hooks/order';
 import { useProductShopDetail } from '@/src/lib/hooks/product/product-shop';
 import { Minus, Plus, MessageSquare, Heart, Share2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/src/components/ui/tabs';
@@ -109,6 +109,10 @@ function ProductDetailContent() {
 
     const handleBuyNow = () => {
         if (!selectedItem || isOutOfStock) return;
+
+        // Simpan kuantitas ke sessionStorage agar tidak muncul di query string
+        sessionStorage.setItem('checkout_qty', quantity.toString());
+
         router.push(`/checkout?pid=${product.id}&itemId=${selectedItem.id}`);
     };
 
@@ -175,14 +179,14 @@ function ProductDetailContent() {
                 <div className="md:col-span-5 flex flex-col gap-6">
                     <div>
                         <h1 className="text-xl font-semibold leading-snug">{product.name}</h1>
-                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                        {/* <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
                             <span>Sold 100+</span>
                             <span>•</span>
                             <span className="flex items-center gap-1">⭐ 4.9 (312 rating)</span>
-                        </div>
+                        </div> */}
                     </div>
 
-                    <div className="text-3xl font-bold">
+                    <div className="text-3xl font-bold text-primary">
                         {selectedItem
                             ? formatPrice(selectedItem.price)
                             : formatPrice(product.items[0]?.price || 0)}
