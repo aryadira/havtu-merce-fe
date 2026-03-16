@@ -45,7 +45,7 @@ import {
     TableRow,
 } from '@/src/components/ui/table';
 import { useGetOrdersManage } from '@/src/lib/hooks/order';
-import { OrdersListResponse, OrderResponse } from '@/src/types/order';
+import { OrderListResponse, OrderResponse } from '@/src/types/order';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -60,7 +60,7 @@ export const dynamic = 'force-dynamic';
 // Main component with logic
 function OrderListContent() {
     const { page, limit, next, prev } = usePagination();
-    const { data: orders, isLoading: loadOrders } = useGetOrdersManage(page, limit);
+    const { data: orders, isLoading: loadOrders } = useGetOrdersManage({page, limit});
 
     const ordersData = orders?.data ?? [];
     const meta = orders?.meta ?? { totalItems: 0, itemCount: 0 };

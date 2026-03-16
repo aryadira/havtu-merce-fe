@@ -5,13 +5,6 @@ import jwt from 'jsonwebtoken';
 // Public routes (exact match)
 const PUBLIC_PATHS = new Set(['/login', '/register', '/unauthorized']);
 
-// Role-based routes
-const ROLE_ACCESS: Record<string, string[]> = {
-    buyer: ['/products/shop', '/cart'],
-    seller: ['/products/manage', '/orders/manage'],
-    administrator: ['/products/manage', '/products/access', '/dashboard/admin'],
-};
-
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const next = NextResponse.next();
@@ -22,15 +15,16 @@ export async function proxy(req: NextRequest) {
 
     // allow homepage as public
     const isPublicRoute = pathname === '/' || PUBLIC_PATHS.has(pathname);
+    const isAutoRedirectRoute = pathname === '/' || pathname === '/login' || pathname === '/register';
 
     // 1. Public route → skip auth
     if (isPublicRoute) {
-        if (token) {
+        if (token && isAutoRedirectRoute) {
             const decoded: any = jwt.decode(token);
-            const role = decoded?.role;
+            const allowedPaths: string[] = decoded?.allowedPaths || [];
 
-            if (role && ROLE_ACCESS[role]) {
-                return NextResponse.redirect(new URL(ROLE_ACCESS[role][0], req.url));
+            if (allowedPaths.length > 0) {
+                return NextResponse.redirect(new URL(allowedPaths[0], req.url));
             }
         }
         return next;
@@ -45,25 +39,47 @@ export async function proxy(req: NextRequest) {
     // Decode token (safely)
     const decoded: any = jwt.decode(token);
     const role = decoded?.role;
+    const allowedPaths: string[] = decoded?.allowedPaths || [];
 
     // If decode fails → force login
     if (!role) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // Protected route check
-    const allProtectedPaths = Object.values(ROLE_ACCESS).flat();
-    const isProtectedRoute = allProtectedPaths.some((p) => pathname.startsWith(p));
+    // Check role access (default deny if not in allowedPaths)
+    const hasAccess = allowedPaths.some((p) => {
+        // [DEBUG LOG] Aktifkan ini untuk debugging di terminal
+        // console.log(`[Proxy] Checking ${pathname} against pattern: ${p}`);
 
-    // If not protected → allow
-    if (!isProtectedRoute) return next;
+        // 1. Exact Match
+        if (pathname === p || pathname === p + '/') return true;
 
-    // Check role access
-    const allowedPaths = ROLE_ACCESS[role] || [];
-    const hasAccess = allowedPaths.some((p) => pathname.startsWith(p));
+        // 2. Wildcard Support (e.g., "/products/*")
+        if (p.includes('*')) {
+            const wildcardPattern = p.replace(/\*/g, '.*');
+            const regString = `^${wildcardPattern}(/.*)?$`;
+            if (new RegExp(regString).test(pathname)) return true;
+        }
+
+        // 3. Parameter Support (e.g., "/products/:id", "/orders/:uuid")
+        if (p.includes(':')) {
+            const paramPattern = p
+                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special chars (: tidak termasuk, jadi tetap aman)
+                .replace(/:[^/]+/g, '[^/]+');             // Ubah :id → cocok dengan segmen apa pun
+            const regString = `^${paramPattern}(/.*)?$`;
+            if (new RegExp(regString).test(pathname)) return true;
+        }
+
+        // 4. Prefix Match (default behavior)
+        if (pathname.startsWith(p.endsWith('/') ? p : p + '/')) return true;
+
+        return false;
+    });
 
     if (!hasAccess) {
-        return NextResponse.redirect(unauthorizedUrl);
+        // [DEBUG LOG] Sangat berguna jika akses ditolak terus
+        console.log(`[Proxy] !! ACCESS DENIED !! Path: ${pathname} | Role: ${role} | Allowed: ${JSON.stringify(allowedPaths)}`);
+        return NextResponse.rewrite(unauthorizedUrl);
     }
 
     return next;

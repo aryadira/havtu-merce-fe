@@ -1,36 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders } from '../../api/order/order';
 import { CheckoutOrderDto } from '@/src/types/order';
+import { Pagination } from '@/src/types/pagination';
+import { PaginationTableState } from '@tanstack/react-table';
 
-// --- Query Keys ---
-export const getOrdersQueryKey = (page: number, limit: number) => ['orders', page, limit];
-export const getOrdersManageQueryKey = (page: number, limit: number) => [
-    'orders-manage',
-    page,
-    limit,
-];
-export const getOrderQueryKey = (orderId: string) => ['order', orderId];
+const orderKeys = {
+    key: ['order'] as const,
+    carts: ['carts'] as const,
+    lists: () => [...orderKeys.key, 'orders'] as const,
+    page: (pagination: Pagination) => [...orderKeys.lists(), pagination] as const,
+    manageLists: () => [...orderKeys.key, 'orders-manage'] as const,
+    managePage: (pagination: Pagination) => [...orderKeys.manageLists(), pagination] as const,
+    item: () => [...orderKeys.key, 'item'] as const,
+    details: (id: string | undefined) => [...orderKeys.item(), id] as const,
+}
 
-// --- Hooks ---
-export const useGetOrders = (page: number, limit: number) => {
+export const useGetOrders = (pagination: Pagination) => {
     return useQuery({
-        queryKey: getOrdersQueryKey(page, limit),
-        queryFn: () => orders.getOrders(page, limit),
+        queryKey: orderKeys.page(pagination),
+        queryFn: () => orders.getOrders(pagination),
     });
 };
 
-export const useGetOrdersManage = (page: number, limit: number) => {
+export const useGetOrdersManage = (pagination: Pagination) => {
     return useQuery({
-        queryKey: getOrdersManageQueryKey(page, limit),
-        queryFn: () => orders.getOrdersManage(page, limit),
+        queryKey: orderKeys.managePage(pagination),
+        queryFn: () => orders.getOrdersManage(pagination),
     });
 };
 
-export const useGetOrder = (orderId: string) => {
+export const useGetOrder = (id: string | undefined) => {
     return useQuery({
-        queryKey: getOrderQueryKey(orderId),
-        queryFn: () => orders.getOrder(orderId),
-        enabled: !!orderId,
+        queryKey: orderKeys.details(id),
+        queryFn: () => orders.getOrder(id),
+        enabled: !!id,
     });
 };
 
@@ -42,7 +45,7 @@ export const useCheckout = (options?: {
     return useMutation({
         mutationFn: (data: CheckoutOrderDto) => orders.checkout(data),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['carts'] });
+            queryClient.invalidateQueries({ queryKey: orderKeys.carts });
             options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),

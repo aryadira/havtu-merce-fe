@@ -5,13 +5,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../api/auth/auth';
 
-// --- Query Keys ---
-export const getAuthUserQueryKey = () => ['auth-user'];
+const authKeys = {
+    key: ['auth'] as const,
+    user: () => [...authKeys.key, 'user'] as const,
+};
 
-// --- Hooks ---
 export const useMe = () => {
     return useQuery({
-        queryKey: getAuthUserQueryKey(),
+        queryKey: authKeys.user(),
         queryFn: () => auth.me(),
     });
 };
@@ -24,7 +25,7 @@ export const useLogin = (options?: {
     return useMutation({
         mutationFn: (data: LoginSchema) => auth.login(data),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: getAuthUserQueryKey() });
+            queryClient.invalidateQueries({ queryKey: authKeys.user() });
             options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),
@@ -39,7 +40,7 @@ export const useRegister = (options?: {
     return useMutation({
         mutationFn: (data: RegisterSchema) => auth.register(data),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: getAuthUserQueryKey() });
+            queryClient.invalidateQueries({ queryKey: authKeys.user() });
             options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),
@@ -52,7 +53,7 @@ export const useLogout = (options?: { onSuccess?: () => void; onError?: (error: 
     return useMutation({
         mutationFn: () => auth.logout(),
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: getAuthUserQueryKey() });
+            await queryClient.invalidateQueries({ queryKey: authKeys.user() });
             router.push('/login');
             options?.onSuccess?.();
         },

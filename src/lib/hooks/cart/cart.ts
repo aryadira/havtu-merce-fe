@@ -1,13 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { carts, AddToCartDTO, UpdateCartDTO } from '../../api/cart/cart';
+import { carts } from '../../api/cart';
+import { AddToCartDto, UpdateCartDto } from '@/src/types/cart';
 
-// --- Query Keys ---
-export const getCartsQueryKey = () => ['carts'];
+const cartKeys = {
+    key: ['cart'] as const,
+    lists: () => [...cartKeys.key, 'lists'] as const,
+}
 
-// --- Hooks ---
 export const useGetCarts = () => {
     return useQuery({
-        queryKey: getCartsQueryKey(),
+        queryKey: cartKeys.lists(),
         queryFn: () => carts.getCarts(),
     });
 };
@@ -18,9 +20,9 @@ export const useAddToCart = (options?: {
 }) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: AddToCartDTO) => carts.addToCart(data),
+        mutationFn: (data: AddToCartDto) => carts.addToCart(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getCartsQueryKey() });
+            queryClient.invalidateQueries({ queryKey: cartKeys.lists() });
             options?.onSuccess?.();
         },
         onError: (error) => options?.onError?.(error),
@@ -33,9 +35,9 @@ export const useUpdateCartItem = (options?: {
 }) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: UpdateCartDTO) => carts.updateCartItem(data),
+        mutationFn: (data: UpdateCartDto) => carts.updateCartItem(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getCartsQueryKey() });
+            queryClient.invalidateQueries({ queryKey: cartKeys.lists() });
             options?.onSuccess?.();
         },
         onError: (error) => options?.onError?.(error),
@@ -50,7 +52,7 @@ export const useRemoveCartItem = (options?: {
     return useMutation({
         mutationFn: (id: string) => carts.removeCartItem(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getCartsQueryKey() });
+            queryClient.invalidateQueries({ queryKey: cartKeys.lists() });
             options?.onSuccess?.();
         },
         onError: (error) => options?.onError?.(error),

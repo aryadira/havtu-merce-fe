@@ -1,23 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
 import { productShop } from '../../api/product/product-shop';
+import { Pagination } from '@/src/types/pagination';
 
-export const useProductShop = (page: number, limit: number) => {
+const productShopKeys = {
+    key: ['product-shop'] as const,
+    categories: () => [...productShopKeys.key, 'categories'] as const,
+    lists: () => [...productShopKeys.key, 'lists'] as const,
+    page: (pagination: Pagination) => [...productShopKeys.lists(), pagination] as const,
+    item: () => [...productShopKeys.key, 'item'] as const,
+    details: (id: string | undefined) => [...productShopKeys.item(), id] as const,
+};
+
+export const useProductShopList = (pagination: Pagination) => {
     return useQuery({
-        queryKey: ['products-shop', page, limit],
-        queryFn: () => productShop.getProducts({ page, limit }),
+        queryKey: productShopKeys.page(pagination),
+        queryFn: () => productShop.getProducts(pagination),
     });
 };
 
-export const useProductShopDetail = (id: string) => {
+export const useProductShopDetail = (id: string | undefined) => {
     return useQuery({
-        queryKey: ['product-shop', id],
+        queryKey: productShopKeys.details(id),
         queryFn: () => productShop.getProductDetails(id),
+        enabled: !!id,
     });
 };
 
 export const useProductCategories = () => {
     return useQuery({
-        queryKey: ['product-shop-categories'],
+        queryKey: productShopKeys.categories(),
         queryFn: () => productShop.getCategories(),
     });
 };

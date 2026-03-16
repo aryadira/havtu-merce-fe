@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { shippingMethod } from '../../api/shipping-method/shipping-method';
 
-export const getShippingMethodsQueryKey = () => ['shipping-methods'];
+const shippingMethodKeys = {
+    key: ['shipping-method'] as const,
+    lists: () => [...shippingMethodKeys.key, 'lists'] as const,
+}
 
-export const useGetShippingMethods = () => {
+export const useShippingMethods = () => {
     return useQuery({
-        queryKey: getShippingMethodsQueryKey(),
+        queryKey: shippingMethodKeys.lists(),
         queryFn: () => shippingMethod.getShippingMethods(),
     });
 };

@@ -49,7 +49,7 @@ export default function LoginPage() {
                 const redirectUser = await refetch().then((res) => res.data);
                 switch (redirectUser?.role_slug) {
                     case 'administrator':
-                        router.push('/products/manage');
+                        router.push('/dashboard');
                         break;
                     case 'seller':
                         router.push('/products/manage');

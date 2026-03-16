@@ -2,14 +2,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { productManage } from '../../api/product/product-manage';
 import { Pagination } from '@/src/types/pagination';
 import { CreateProductSchema } from '@/src/app/(admin)/products/schema';
-import { ManageProductListResponse } from '@/src/types/product';
+import { ProductManageListResponse } from '@/src/types/product';
 
-export const useProductManageList = <T extends ManageProductListResponse>(
+const productKeys = {
+    key: ['product-manage'] as const,
+    lists: () => [...productKeys.key, 'lists'] as const,
+    page: (pagination: Pagination) => [...productKeys.lists(), pagination] as const,
+    item: () => [...productKeys.key, 'item'] as const,
+    details: (id: string | undefined) => [...productKeys.item(), id] as const,
+};
+
+export const useProductManageList = <T extends ProductManageListResponse>(
     pagination: Pagination,
-    select?: (data: ManageProductListResponse) => T,
+    select?: (data: ProductManageListResponse) => T,
 ) => {
     return useQuery({
-        queryKey: ['product-manage', pagination],
+        queryKey: productKeys.page(pagination),
         queryFn: () => productManage.getProducts(pagination),
         select,
     });
@@ -17,7 +25,7 @@ export const useProductManageList = <T extends ManageProductListResponse>(
 
 export const useProductDetails = (id: string | undefined) => {
     return useQuery({
-        queryKey: ['product-manage-details', id],
+        queryKey: productKeys.details(id),
         queryFn: () => productManage.getProductDetails(id),
         enabled: !!id,
     });
@@ -32,7 +40,7 @@ export const useCreateProduct = (options?: {
         mutationFn: (product: CreateProductSchema) => productManage.createProduct(product),
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['product-manage'],
+                queryKey: productKeys.lists(),
             });
             options?.onSuccess?.();
         },
@@ -54,7 +62,7 @@ export const useUpdateProduct = (
         mutationFn: (product: CreateProductSchema) => productManage.updateProduct(id, product),
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['product-manage-details', id],
+                queryKey: productKeys.details(id),
             });
             options?.onSuccess?.();
         },
@@ -76,7 +84,7 @@ export const useDeleteProduct = (
         mutationFn: () => productManage.deleteProduct(id),
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['product-manage', id],
+                queryKey: productKeys.lists(),
             });
             options?.onSuccess?.();
         },

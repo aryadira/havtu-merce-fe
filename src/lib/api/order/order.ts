@@ -1,21 +1,22 @@
 import api from '@/src/lib/axios';
-import { OrdersListResponse, OrderResponse, CheckoutOrderDto } from '@/src/types/order';
+import { OrderListResponse, OrderResponse, CheckoutOrderDto } from '@/src/types/order';
+import { Pagination } from '@/src/types/pagination';
 
 export const orders = {
     ORDERS_URL: '/orders',
 
-    async getOrders(page = 1, limit = 10): Promise<OrdersListResponse> {
-        const response = await api.get(this.ORDERS_URL, { params: { page, limit } });
+    async getOrders(pagination: Pagination): Promise<OrderListResponse> {
+        const response = await api.get(this.ORDERS_URL, { params: pagination });
         return response.data;
     },
 
-    async getOrdersManage(page = 1, limit = 10): Promise<OrdersListResponse> {
-        const response = await api.get(this.ORDERS_URL, { params: { page, limit } });
+    async getOrdersManage(pagination: Pagination): Promise<OrderListResponse> {
+        const response = await api.get(this.ORDERS_URL, { params: pagination });
         return response.data;
     },
 
-    async getOrder(orderId: string): Promise<OrderResponse> {
-        const response = await api.get(`${this.ORDERS_URL}/${orderId}`);
+    async getOrder(id: string | undefined): Promise<OrderResponse> {
+        const response = await api.get(`${this.ORDERS_URL}/${id}`);
         return response.data;
     },
 

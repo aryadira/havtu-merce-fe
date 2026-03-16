@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { PackageX } from 'lucide-react';
-import { useProductShop } from '@/src/lib/hooks/product/product-shop';
+import { useProductShopList } from '@/src/lib/hooks/product/product-shop';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +22,7 @@ export default function ShopPage() {
 
 function ShopPageContent() {
     const { page, limit, next, prev } = usePagination();
-    const { data: products, isLoading: loadProducts } = useProductShop(page, limit);
+    const { data: products, isLoading: loadProducts } = useProductShopList({page, limit});
 
     const productData = products?.data || [];
     const meta = products?.meta;

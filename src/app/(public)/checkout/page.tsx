@@ -10,8 +10,8 @@ import { MapPin, ShieldCheck, TicketPercent, ChevronRight, Check, Loader2 } from
 import { Card } from '@/src/components/ui/card';
 import { motion } from 'framer-motion';
 import { PageLoader } from '@/src/components/ui/page-loader';
-import { useGetProfile } from '@/src/lib/hooks/user';
-import { useGetShippingMethods } from '@/src/lib/hooks/shipping-method';
+import { useProfile } from '@/src/lib/hooks/user';
+import { useShippingMethods } from '@/src/lib/hooks/shipping-method';
 import { useUserPaymentMethods } from '@/src/lib/hooks/user/user-payment-method';
 
 export default function CheckoutPage() {
@@ -54,8 +54,8 @@ function CheckoutContent() {
     }, [quantity, isInitialized]);
 
     // Fetch real data
-    const { data: userData, isLoading: isLoadingUser } = useGetProfile();
-    const { data: shippingMethods, isLoading: isLoadingShipping } = useGetShippingMethods();
+    const { data: userData, isLoading: isLoadingUser } = useProfile();
+    const { data: shippingMethods, isLoading: isLoadingShipping } = useShippingMethods();
     const { data: product, isLoading: isLoadingProduct } = useProductShopDetail(pid as string);
     const { data: userPaymentMethods, isLoading: isLoadingPayment } = useUserPaymentMethods();
 

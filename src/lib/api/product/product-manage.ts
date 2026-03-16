@@ -1,5 +1,5 @@
 import api from '../../axios';
-import { ManageProductListResponse, ProductDetailResponse } from '@/src/types/product';
+import { ProductManageListResponse, ProductDetailResponse } from '@/src/types/product';
 import { CreateProductSchema } from '@/src/app/(admin)/products/schema';
 import { Pagination } from '@/src/types/pagination';
 
@@ -7,7 +7,7 @@ export const productManage = {
     PRODUCT_MANAGE_URL: '/products/manage',
 
     async getProducts(pagination: Partial<Pagination>) {
-        const response = await api.get<ManageProductListResponse>(this.PRODUCT_MANAGE_URL, {
+        const response = await api.get<ProductManageListResponse>(this.PRODUCT_MANAGE_URL, {
             params: pagination,
         });
         return response.data;

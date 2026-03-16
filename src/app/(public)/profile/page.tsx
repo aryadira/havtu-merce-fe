@@ -46,7 +46,7 @@ import { useForm } from 'react-hook-form';
 import { profileSchema, UserGender, type ProfileSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/src/components/ui/input';
-import { useUpdateUser, useGetProfile, useCreateAddress } from '@/src/lib/hooks/user';
+import { useUpdateUser, useProfile, useCreateAddress } from '@/src/lib/hooks/user';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 }
 
 function ProfilePageContent() {
-    const { data: user, isLoading } = useGetProfile();
+    const { data: user, isLoading } = useProfile();
     const [isEditing, setIsEditing] = useState(false);
 
     const form = useForm<ProfileSchema>({

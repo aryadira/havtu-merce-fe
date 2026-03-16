@@ -14,13 +14,15 @@ import {
 import { SIDEBAR_NAVIGATIONS } from '../lib/constants/sidebar-navigation';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
-import { useLogout } from '../lib/hooks/auth';
+import { useLogout, useMe } from '../lib/hooks/auth';
 import { toast } from 'sonner';
 import { cn } from '@/src/lib/utils';
+import { Skeleton } from './ui/skeleton';
 
 export function AppSidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const { data: user, isLoading: loadUser } = useMe();
 
     const { mutate: logout, isPending } = useLogout({
         onSuccess: () => {
@@ -36,6 +38,11 @@ export function AppSidebar() {
         logout(undefined);
     };
 
+    const filteredNavigations = SIDEBAR_NAVIGATIONS.filter((item) => {
+        if (!item.roles) return true;
+        return user?.role_slug && item.roles.includes(user.role_slug);
+    });
+
     return (
         <Sidebar>
             <SidebarContent>
@@ -43,22 +50,34 @@ export function AppSidebar() {
                     <SidebarGroupLabel>HavtuMerce</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {SIDEBAR_NAVIGATIONS.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
-                                        <a
-                                            href={item.url}
-                                            className={cn(
-                                                'flex items-center gap-2',
-                                                pathname === item.url && 'text-primary font-medium',
-                                            )}
-                                        >
-                                            <item.icon />
-                                            <span>{item.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
+                            {loadUser ? (
+                                Array.from({ length: 4 }).map((_, i) => (
+                                    <SidebarMenuItem key={i}>
+                                        <SidebarMenuButton disabled>
+                                            <Skeleton className="w-4 h-4" />
+                                            <Skeleton className="w-24 h-4" />
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))
+                            ) : (
+                                filteredNavigations.map((item) => (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton asChild>
+                                            <a
+                                                href={item.url}
+                                                className={cn(
+                                                    'flex items-center gap-2',
+                                                    pathname === item.url &&
+                                                        'text-primary font-medium',
+                                                )}
+                                            >
+                                                <item.icon />
+                                                <span>{item.title}</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))
+                            )}
                         </SidebarMenu>
 
                         <SidebarMenu className="mt-4 border-t pt-2">

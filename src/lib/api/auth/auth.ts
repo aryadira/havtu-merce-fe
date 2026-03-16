@@ -1,28 +1,10 @@
 import { LoginSchema } from '@/src/app/(auth)/login/schema';
 import { RegisterSchema } from '@/src/app/(auth)/register/schema';
-import { UserGender } from '@/src/app/(public)/profile/schema';
 import api from '@/src/lib/axios';
 import { useAuthStore } from '@/src/stores/auth.store';
+import { CurrentUserResponse } from '@/src/types/auth';
 
-// --- Types ---
-export interface CurrentUserResponse {
-    id: string;
-    user_role_id: string;
-    role_slug: string;
-    username: string;
-    email: string;
-    profile: {
-        id: string;
-        user_id: string;
-        fullname: string;
-        phone_number: string;
-        avatar: string;
-        birthdate: string;
-        gender: UserGender;
-    };
-}
-
-export const auth = {
+export const auth = {   
     AUTH_URL: '/auth',
 
     async login(data: LoginSchema) {

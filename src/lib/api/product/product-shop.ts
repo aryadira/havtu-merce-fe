@@ -12,7 +12,7 @@ export const productShop = {
         return response.data;
     },
 
-    async getProductDetails(id: string) {
+    async getProductDetails(id: string | undefined) {
         const response = await api.get<ProductDetailResponse>(`${this.PRODUCT_SHOP_URL}/${id}`);
         return response.data;
     },

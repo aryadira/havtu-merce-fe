@@ -1,17 +1,5 @@
 import api from '@/src/lib/axios';
-import { Cart } from '@/src/types/product';
-
-export interface AddToCartDTO {
-    user_id?: string;
-    product_id: string;
-    item_qty: number;
-    session_id?: string;
-}
-
-export interface UpdateCartDTO {
-    item_id: string;
-    item_qty: number;
-}
+import { Cart, AddToCartDto, UpdateCartDto } from '@/src/types/cart';
 
 export const carts = {
     CARTS_URL: '/carts',
@@ -21,12 +9,12 @@ export const carts = {
         return response.data;
     },
 
-    async addToCart(data: AddToCartDTO) {
+    async addToCart(data: AddToCartDto) {
         const response = await api.post(this.CARTS_URL, data);
         return response.data;
     },
 
-    async updateCartItem(data: UpdateCartDTO) {
+    async updateCartItem(data: UpdateCartDto) {
         const response = await api.patch(`${this.CARTS_URL}/${data.item_id}`, data);
         return response.data;
     },

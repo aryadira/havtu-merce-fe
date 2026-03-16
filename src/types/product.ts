@@ -1,4 +1,6 @@
+import { Cart } from './cart';
 import { Meta } from './meta';
+import { ShippingInfo } from './shipping';
 import { Shop } from './shop';
 
 export interface ProductConfiguration {
@@ -105,7 +107,7 @@ export interface ProductVariationOption {
     updated_at: string;
 }
 
-export interface ManageProductListResponse {
+export interface ProductManageListResponse {
     data: ProductItemResponse[];
     meta: Meta;
 }
@@ -114,6 +116,7 @@ export interface ProductShopListResponse {
     data: ProductShop[];
     meta: Meta;
 }
+
 export interface ProductManage {
     id: string;
     user_id: string;
@@ -134,46 +137,4 @@ export interface ProductShop {
     price: number;
     shop_name: string;
     shop_city: string;
-}
-
-export interface Cart {
-    id: string;
-    user_id: string | null;
-    created_at: string;
-    updated_at: string;
-    session_id: string | null;
-    cart_items: CartItem[];
-}
-
-export interface CartItem {
-    item_id: string;
-    cart_id: string;
-    product_id: string;
-    item_qty: number;
-    created_at: string;
-    updated_at: string;
-    product: ProductShop;
-}
-
-export interface ShippingInfo {
-    fullName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    postalCode: string;
-    notes?: string;
-}
-
-export interface Order {
-    id: string;
-    items: Cart[];
-    shippingInfo: ShippingInfo;
-    subtotal: number;
-    shipping: number;
-    total: number;
-    paymentMethod: string;
-    paymentProof?: string;
-    status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
-    createdAt: Date;
 }
