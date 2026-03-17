@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders } from '../../api/order/order';
 import { CheckoutOrderDto } from '@/src/types/order';
 import { Pagination } from '@/src/types/pagination';
-import { PaginationTableState } from '@tanstack/react-table';
 
 const orderKeys = {
     key: ['order'] as const,

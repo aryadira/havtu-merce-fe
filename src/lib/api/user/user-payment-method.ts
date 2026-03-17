@@ -7,4 +7,9 @@ export const userPaymentMethod = {
         const response = await api.get(this.USER_PAYMENT_METHOD_URL);
         return response.data;
     },
+
+    async createPaymentMethod(data: any) {
+        const response = await api.post(this.USER_PAYMENT_METHOD_URL, data);
+        return response.data;
+    },
 };

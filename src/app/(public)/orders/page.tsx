@@ -29,7 +29,7 @@ export default function OrderListPage() {
     const [page, setPage] = useState(1);
     const limit = 10;
 
-    const { data, isLoading, isError } = useGetOrders(page, limit);
+    const { data, isLoading, isError } = useGetOrders({ page, limit });
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -127,9 +127,10 @@ export default function OrderListPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Order ID</TableHead>
+                                <TableHead>Order Number</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead>Order Status</TableHead>
+                                <TableHead>Payment Status</TableHead>
                                 <TableHead className="text-right">Total Amount</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -137,8 +138,8 @@ export default function OrderListPage() {
                         <TableBody>
                             {orders.map((order) => (
                                 <TableRow key={order.id}>
-                                    <TableCell className="text-xs">
-                                        {order.id.substring(0, 8)}...
+                                    <TableCell>
+                                        {order.order_number || 'N/A'}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -151,26 +152,17 @@ export default function OrderListPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex flex-col gap-1">
-                                            <Badge
-                                                variant={
-                                                    order.payment_status === 'PAID'
-                                                        ? 'default'
-                                                        : order.payment_status === 'UNPAID'
-                                                          ? 'destructive'
-                                                          : 'secondary'
-                                                }
-                                                className="w-fit text-[10px] px-2 py-0.5"
-                                            >
-                                                {order.payment_status}
-                                            </Badge>
-                                            <span className="text-xs text-muted-foreground ml-1">
-                                                {order.order_status}
-                                            </span>
+                                        <div className="flex flex-col gap-1 text-muted-foreground">
+                                            <p>{order.order_status.label}</p>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1 text-muted-foreground">
+                                            <p>{order.payment_status.label}</p>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right font-medium">
-                                        {formatCurrency(order.total_amount)}
+                                        {formatCurrency(Number(order.order_total))}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button

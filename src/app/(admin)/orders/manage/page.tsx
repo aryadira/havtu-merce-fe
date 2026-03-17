@@ -235,10 +235,10 @@ const columns: ColumnDef<OrderResponse>[] = [
         ),
     },
     {
-        accessorKey: 'total_amount',
+        accessorKey: 'order_total',
         header: () => <div className="text-right">Total Amount</div>,
         cell: ({ row }) => {
-            const amount = row.getValue('total_amount') as number;
+            const amount = Number(row.getValue('order_total'));
             const formatted = new Intl.NumberFormat('id-ID', {
                 style: 'currency',
                 currency: 'IDR',
@@ -250,26 +250,26 @@ const columns: ColumnDef<OrderResponse>[] = [
         accessorKey: 'order_status',
         header: 'Order Status',
         cell: ({ row }) => {
-            const status = row.getValue('order_status') as string;
-            return <div className="font-medium text-xs">{status}</div>;
+            const status = row.original.order_status;
+            return <div className="font-medium text-xs">{status.label}</div>;
         },
     },
     {
         accessorKey: 'payment_status',
         header: 'Payment',
         cell: ({ row }) => {
-            const status = row.getValue('payment_status') as string;
+            const status = row.original.payment_status;
             return (
                 <div
                     className={`text-xs font-semibold ${
-                        status === 'PAID'
+                        status.slug === 'paid'
                             ? 'text-green-600'
-                            : status === 'UNPAID'
+                            : status.slug === 'unpaid'
                               ? 'text-red-500'
                               : 'text-gray-500'
                     }`}
                 >
-                    {status}
+                    {status.label}
                 </div>
             );
         },

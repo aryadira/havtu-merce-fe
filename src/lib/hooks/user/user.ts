@@ -6,7 +6,7 @@ const userKeys = {
     key: ['user'] as const,
     profile: () => [...userKeys.key, 'profile'] as const,
     authUser: () => [...userKeys.key, 'auth-user'] as const,
-}
+};
 
 export const useProfile = () => {
     return useQuery({

@@ -166,7 +166,7 @@ const ProductHeader = () => (
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-10 shadow-sm p-4 bg-muted/5 rounded-lg border border-border/50"
+        className="mb-10"
     >
         <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">Products</h1>
         <p className="text-sm text-muted-foreground">Curated selection of minimal essentials</p>

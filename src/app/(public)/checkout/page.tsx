@@ -13,6 +13,14 @@ import { PageLoader } from '@/src/components/ui/page-loader';
 import { useProfile } from '@/src/lib/hooks/user';
 import { useShippingMethods } from '@/src/lib/hooks/shipping-method';
 import { useUserPaymentMethods } from '@/src/lib/hooks/user/user-payment-method';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/src/components/ui/dialog';
+import { Badge } from '@/src/components/ui/badge';
 
 export default function CheckoutPage() {
     return (
@@ -68,6 +76,7 @@ function CheckoutContent() {
     const [selectedAddress, setSelectedAddress] = useState<any>(null);
     const [shippingMethodId, setShippingMethodId] = useState('');
     const [userPaymentMethodId, setUserPaymentMethodId] = useState('');
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
     // Pre-select defaults
     useEffect(() => {
@@ -233,37 +242,99 @@ function CheckoutContent() {
                                 Alamat Pengiriman
                             </h2>
                             <div className="flex items-start justify-between">
-                                {selectedAddress ? (
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <MapPin className="w-4 h-4 text-emerald-500" />
-                                            <span className="font-semibold text-[15px]">
-                                                {selectedAddress.is_default ? 'Utama' : 'Rumah'}{' '}
-                                                <span className="text-gray-400 font-normal mx-1">
-                                                    •
-                                                </span>{' '}
-                                                {user?.profile?.fullname}
-                                            </span>
+                                    {selectedAddress ? (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <MapPin className="w-4 h-4 text-emerald-500" />
+                                                <span className="font-semibold text-[15px]">
+                                                    {selectedAddress.is_default ? 'Utama' : 'Rumah'}{' '}
+                                                    <span className="text-gray-400 font-normal mx-1">
+                                                        •
+                                                    </span>{' '}
+                                                    {user?.profile?.fullname}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-600 text-[15px] leading-relaxed max-w-xl">
+                                                {selectedAddress.address}, {selectedAddress.city},{' '}
+                                                {selectedAddress.province},{' '}
+                                                {selectedAddress.country},{' '}
+                                                {user?.profile?.phone_number}
+                                            </p>
                                         </div>
-                                        <p className="text-gray-600 text-[15px] leading-relaxed max-w-xl">
-                                            {selectedAddress.address}, {selectedAddress.city},{' '}
-                                            {selectedAddress.province}, {selectedAddress.country},{' '}
-                                            {user?.profile?.phone_number}
+                                    ) : (
+                                        <p className="text-sm text-red-500">
+                                            Alamat belum diatur. Silakan tambah alamat di profil.
                                         </p>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-red-500">
-                                        Alamat belum diatur. Silakan tambah alamat di profil.
-                                    </p>
-                                )}
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="rounded-full text-xs font-semibold h-8 px-4 text-gray-600 border-gray-300"
-                                    onClick={() => router.push('/profile')}
-                                >
-                                    {selectedAddress ? 'Ganti' : 'Atur'}
-                                </Button>
+                                    )}
+
+                                    <Dialog
+                                        open={isAddressModalOpen}
+                                        onOpenChange={setIsAddressModalOpen}
+                                    >
+                                        <DialogTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="rounded-full text-xs font-semibold h-8 px-4 text-gray-600 border-gray-300"
+                                            >
+                                                {selectedAddress ? 'Ganti Alamat' : 'Atur Alamat'}
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+                                            <DialogHeader className="p-6 pb-0">
+                                                <DialogTitle>Pilih Alamat Pengiriman</DialogTitle>
+                                            </DialogHeader>
+                                            <div className="p-6 max-h-[60vh] overflow-y-auto flex flex-col gap-3">
+                                                {addresses.map((addr: any, idx: number) => (
+                                                    <div
+                                                        key={addr.id || idx}
+                                                        onClick={() => {
+                                                            setSelectedAddress(addr);
+                                                            setIsAddressModalOpen(false);
+                                                        }}
+                                                        className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all hover:border-emerald-500 hover:bg-emerald-50/30 ${
+                                                            selectedAddress?.id === addr.id
+                                                                ? 'border-emerald-500 bg-emerald-50/50'
+                                                                : 'border-gray-200'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="font-bold text-sm text-gray-800">
+                                                                {user?.profile?.fullname}
+                                                            </span>
+                                                            {addr.is_default && (
+                                                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[10px] h-5 border-emerald-200">
+                                                                    Utama
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mb-1">
+                                                            {user?.profile?.phone_number}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600 line-clamp-2">
+                                                            {addr.address}, {addr.city},{' '}
+                                                            {addr.province}, {addr.postal_code},{' '}
+                                                            {addr.country}
+                                                        </p>
+                                                        {selectedAddress?.id === addr.id && (
+                                                            <div className="mt-3 flex items-center gap-1 text-emerald-600 text-xs font-bold">
+                                                                <Check className="w-3.5 h-3.5" />{' '}
+                                                                Terpilih
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+
+                                                <Button
+                                                    variant="outline"
+                                                    className="mt-2 border-dashed border-2 py-6 text-gray-500 hover:text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50"
+                                                    onClick={() => router.push('/profile')}
+                                                >
+                                                    Tambah Alamat Baru
+                                                </Button>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                             </div>
                         </Card>
 
@@ -417,7 +488,7 @@ function CheckoutContent() {
                                         className="text-[14px] outline-none flex-1 placeholder:text-gray-400 bg-transparent"
                                     />
                                     <span className="text-[13px] text-gray-400">
-                                        {note.length}/200 {'>'}
+                                        {note.length}/200 &gt;
                                     </span>
                                 </div>
                             </div>

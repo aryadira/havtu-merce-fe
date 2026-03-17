@@ -2,18 +2,19 @@ import { Meta } from '@/src/types/meta';
 import { ProductShop } from '@/src/types/product';
 import { Cart } from './cart';
 import { ShippingAddress, ShippingInfo } from './shipping';
+import { ProductItem } from './product';
 
-export enum OrderStatus {
-    PENDING = 'PENDING',
-    COMPLETED = 'COMPLETED',
-    CANCELLED = 'CANCELLED',
-}
+// export enum OrderStatus {
+//     PENDING = 'PENDING',
+//     COMPLETED = 'COMPLETED',
+//     CANCELLED = 'CANCELLED',
+// }
 
-export enum PaymentStatus {
-    UNPAID = 'UNPAID',
-    PAID = 'PAID',
-    FAILED = 'FAILED',
-}
+// export enum PaymentStatus {
+//     UNPAID = 'UNPAID',
+//     PAID = 'PAID',
+//     FAILED = 'FAILED',
+// }
 
 export interface Order {
     id: string;
@@ -28,27 +29,48 @@ export interface Order {
     createdAt: Date;
 }
 
+export interface OrderStatus {
+    id: string;
+    label: string;
+    slug: string;
+    abbreviation: string;
+    description: string;
+}
+
+export interface PaymentStatus {
+    id: string;
+    label: string;
+    slug: string;
+    abbreviation: string;
+    description: string;
+}
+
 export interface OrderResponse {
     id: string;
     user_id: string;
+    order_number: string;
+    order_status_id: string;
+    payment_status_id: string;
+    user_payment_method_id: string;
+    order_total: string;
+    shipping_method_id: string;
+    shipping_address: string;
+    order_lines: OrderItemResponse[];
     order_status: OrderStatus;
     payment_status: PaymentStatus;
-    total_amount: number;
     created_at: string;
     updated_at: string;
-    order_lines: OrderItemResponse[];
 }
 
 export interface OrderItemResponse {
     id: string;
     order_id: string;
-    product_id: string;
-    item_qty: number;
-    item_price: number;
-    subtotal: number;
+    product_item_id: string;
+    qty: number;
+    price: string;
     created_at: string;
     updated_at: string;
-    product: ProductShop;
+    product_item: ProductItem;
 }
 
 export interface OrderListResponse {

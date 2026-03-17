@@ -10,6 +10,7 @@ import {
     MapPin as MapPinIcon,
     Shield as ShieldIcon,
     Calendar as CalendarIcon,
+    CreditCardIcon,
 } from 'lucide-react';
 
 import { PageLoader } from '@/src/components/ui/page-loader';
@@ -43,10 +44,19 @@ import {
     SelectValue,
 } from '@/src/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { profileSchema, UserGender, type ProfileSchema } from './schema';
+import {
+    profileSchema,
+    UserGender,
+    type ProfileSchema,
+    addressSchema,
+    type AddressSchema,
+    paymentMethodSchema,
+    type PaymentMethodSchema,
+} from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/src/components/ui/input';
-import { useUpdateUser, useProfile, useCreateAddress } from '@/src/lib/hooks/user';
+import { Textarea } from '@/src/components/ui/textarea';
+import { useUpdateUser, useProfile, useCreateAddress } from '@/src/lib/hooks/user/user';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -57,8 +67,12 @@ import {
     DialogFooter,
 } from '@/src/components/ui/dialog';
 import { Checkbox } from '@/src/components/ui/checkbox';
-import { addressSchema, type AddressSchema } from './schema';
-import { Textarea } from '@/src/components/ui/textarea';
+import {
+    useCreatePaymentMethod,
+    useUserPaymentMethods,
+} from '@/src/lib/hooks/user/user-payment-method';
+import { useBanks } from '@/src/lib/hooks/bank/bank';
+import { usePaymentTypes } from '@/src/lib/hooks/payment-type/payment-type';
 
 export default function ProfilePage() {
     return (
@@ -70,7 +84,16 @@ export default function ProfilePage() {
 
 function ProfilePageContent() {
     const { data: user, isLoading } = useProfile();
+    const { data: payment_methods } = useUserPaymentMethods();
+    const { data: banks } = useBanks();
+    const { data: paymentTypes } = usePaymentTypes();
+
+    const { mutate: updateUser, isPending } = useUpdateUser();
+
     const [isEditing, setIsEditing] = useState(false);
+
+    console.log(paymentTypes);
+    console.log(banks);
 
     const form = useForm<ProfileSchema>({
         resolver: zodResolver(profileSchema),
@@ -84,8 +107,6 @@ function ProfilePageContent() {
             avatar: '',
         },
     });
-
-    const { mutate: updateUser, isPending } = useUpdateUser();
 
     useEffect(() => {
         if (user) {
@@ -157,6 +178,30 @@ function ProfilePageContent() {
         },
     });
 
+    const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+    const paymentForm = useForm<PaymentMethodSchema>({
+        resolver: zodResolver(paymentMethodSchema),
+        defaultValues: {
+            payment_type_id: '',
+            bank_id: '',
+            provider: '',
+            account_number: '',
+            account_holder: '',
+            description: '',
+        },
+    });
+
+    const { mutate: createPaymentMethod, isPending: isAddingPayment } = useCreatePaymentMethod({
+        onSuccess: () => {
+            toast.success('Payment method added successfully');
+            setIsAddPaymentOpen(false);
+            paymentForm.reset();
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Failed to add payment method');
+        },
+    });
+
     const handleUpdateProfile = async () => {
         if (!user) return;
         try {
@@ -171,6 +216,10 @@ function ProfilePageContent() {
 
     const handleAddAddress = (data: AddressSchema) => {
         createAddress(data);
+    };
+
+    const handleAddPayment = (data: PaymentMethodSchema) => {
+        createPaymentMethod(data);
     };
 
     if (isLoading) {
@@ -190,6 +239,7 @@ function ProfilePageContent() {
 
     const profile = user.profile || {};
     const addresses = (profile as any).addresses || [];
+    const paymentMethods = payment_methods || [];
     const createdAt = (user as any).createdAt;
 
     const containerVariants = {
@@ -247,14 +297,12 @@ function ProfilePageContent() {
                                 <h1 className="text-3xl font-bold tracking-tight text-foreground">
                                     {profile.fullname}
                                 </h1>
-                                <Badge
-                                    variant="secondary"
-                                    className="uppercase text-xs font-semibold tracking-wider bg-primary/10 text-primary border-primary/20"
-                                >
-                                    {user.role_slug || 'User'}
-                                </Badge>
                             </div>
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2 capitalize">
+                                    <UserIcon className="w-4 h-4" />
+                                    {user.role_slug || 'User'}
+                                </div>
                                 <span className="flex items-center gap-1.5">
                                     <MailIcon className="w-4 h-4" />
                                     {user.email}
@@ -333,6 +381,13 @@ function ProfilePageContent() {
                                 Address Book
                             </TabsTrigger>
                             <TabsTrigger
+                                value="payment-method"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                            >
+                                <CreditCardIcon className="w-4 h-4 mr-2" />
+                                Payment Method
+                            </TabsTrigger>
+                            <TabsTrigger
                                 value="security"
                                 className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
@@ -363,7 +418,7 @@ function ProfilePageContent() {
                                                 <motion.div
                                                     animate={{
                                                         backgroundColor: isEditing
-                                                            ? 'var(--muted-foreground-opacity-5)' // Subtle highlight
+                                                            ? 'var(--muted-foreground-opacity-5)'
                                                             : 'transparent',
                                                         opacity: isEditing ? 1 : 0.9,
                                                     }}
@@ -541,16 +596,11 @@ function ProfilePageContent() {
                                 <Card className="border-border/60">
                                     <CardHeader>
                                         <CardTitle>Account Information</CardTitle>
+                                        <CardDescription>
+                                            Manage your account details
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1">
-                                            <span className="text-sm text-muted-foreground">
-                                                User ID
-                                            </span>
-                                            <p className="font-mono text-xs text-foreground/80 truncate bg-muted/30 p-1.5 rounded w-fit max-w-full">
-                                                {user.id}
-                                            </p>
-                                        </div>
                                         <div className="space-y-1">
                                             <span className="text-sm text-muted-foreground">
                                                 Role
@@ -594,7 +644,10 @@ function ProfilePageContent() {
                                                 Manage your shipping and billing addresses.
                                             </CardDescription>
                                         </div>
-                                        <Dialog open={isAddAddressOpen} onOpenChange={setIsAddAddressOpen}>
+                                        <Dialog
+                                            open={isAddAddressOpen}
+                                            onOpenChange={setIsAddAddressOpen}
+                                        >
                                             <DialogTrigger asChild>
                                                 <Button size="sm">Add New Address</Button>
                                             </DialogTrigger>
@@ -620,7 +673,9 @@ function ProfilePageContent() {
                                                                     <FormControl>
                                                                         <Textarea
                                                                             {...field}
-                                                                            value={field.value as string}
+                                                                            value={
+                                                                                field.value as string
+                                                                            }
                                                                             placeholder="Street name, building number, etc."
                                                                             className="min-h-[80px]"
                                                                         />
@@ -639,7 +694,9 @@ function ProfilePageContent() {
                                                                         <FormControl>
                                                                             <Input
                                                                                 {...field}
-                                                                                value={field.value as string}
+                                                                                value={
+                                                                                    field.value as string
+                                                                                }
                                                                                 placeholder="City"
                                                                             />
                                                                         </FormControl>
@@ -658,7 +715,9 @@ function ProfilePageContent() {
                                                                         <FormControl>
                                                                             <Input
                                                                                 {...field}
-                                                                                value={field.value as string}
+                                                                                value={
+                                                                                    field.value as string
+                                                                                }
                                                                                 placeholder="Province"
                                                                             />
                                                                         </FormControl>
@@ -679,7 +738,9 @@ function ProfilePageContent() {
                                                                         <FormControl>
                                                                             <Input
                                                                                 {...field}
-                                                                                value={field.value as string}
+                                                                                value={
+                                                                                    field.value as string
+                                                                                }
                                                                                 placeholder="Postal Code"
                                                                             />
                                                                         </FormControl>
@@ -698,7 +759,9 @@ function ProfilePageContent() {
                                                                         <FormControl>
                                                                             <Input
                                                                                 {...field}
-                                                                                value={field.value as string}
+                                                                                value={
+                                                                                    field.value as string
+                                                                                }
                                                                                 placeholder="Country"
                                                                             />
                                                                         </FormControl>
@@ -711,7 +774,7 @@ function ProfilePageContent() {
                                                             control={addressForm.control}
                                                             name="is_default"
                                                             render={({ field }) => (
-                                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 border p-4">
                                                                     <FormControl>
                                                                         <Checkbox
                                                                             checked={!!field.value}
@@ -765,11 +828,11 @@ function ProfilePageContent() {
                                                 {addresses.map((addr: any, idx: number) => (
                                                     <div
                                                         key={addr.id || idx}
-                                                        className="flex items-start justify-between p-4 border rounded-lg bg-card hover:bg-muted/10 transition-colors"
+                                                        className="flex items-start justify-between p-4 border bg-card hover:bg-muted/10 transition-colors"
                                                     >
-                                                        <div className="flex gap-4">
+                                                        <div className="flex items-start gap-4">
                                                             <div className="mt-1 p-2 bg-primary/10 rounded-full">
-                                                                <MapPinIcon className="w-4 h-4 text-primary" />
+                                                                <MapPinIcon className="size-4 text-primary" />
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <div className="flex items-center gap-2">
@@ -794,6 +857,290 @@ function ProfilePageContent() {
                                                                     {addr.city}, {addr.province},{' '}
                                                                     {addr.postal_code},{' '}
                                                                     {addr.country}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <Button variant="ghost" size="sm">
+                                                            Edit
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </TabsContent>
+
+                        <TabsContent value="payment-method" className="mt-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                            >
+                                <Card className="border-border/60">
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <div>
+                                            <CardTitle>Payment Methods</CardTitle>
+                                            <CardDescription>
+                                                Manage your saved payment methods.
+                                            </CardDescription>
+                                        </div>
+                                        <Dialog
+                                            open={isAddPaymentOpen}
+                                            onOpenChange={setIsAddPaymentOpen}
+                                        >
+                                            <DialogTrigger asChild>
+                                                <Button size="sm">Add New Payment</Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-[500px]">
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        Add New Payment Method
+                                                    </DialogTitle>
+                                                </DialogHeader>
+                                                <Form {...paymentForm}>
+                                                    <form
+                                                        onSubmit={paymentForm.handleSubmit(
+                                                            handleAddPayment,
+                                                        )}
+                                                        className="space-y-4 py-4"
+                                                    >
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <FormField
+                                                                control={paymentForm.control}
+                                                                name="payment_type_id"
+                                                                render={({ field }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>
+                                                                            Payment Type
+                                                                        </FormLabel>
+                                                                        <Select
+                                                                            onValueChange={
+                                                                                field.onChange
+                                                                            }
+                                                                            defaultValue={
+                                                                                field.value
+                                                                            }
+                                                                        >
+                                                                            <FormControl>
+                                                                                <SelectTrigger>
+                                                                                    <SelectValue placeholder="Select type" />
+                                                                                </SelectTrigger>
+                                                                            </FormControl>
+                                                                            <SelectContent>
+                                                                                {paymentTypes?.length ? (
+                                                                                    paymentTypes.map(
+                                                                                        (type) => (
+                                                                                            <SelectItem
+                                                                                                key={
+                                                                                                    type.id
+                                                                                                }
+                                                                                                value={
+                                                                                                    type.id
+                                                                                                }
+                                                                                            >
+                                                                                                {
+                                                                                                    type.value
+                                                                                                }
+                                                                                            </SelectItem>
+                                                                                        ),
+                                                                                    )
+                                                                                ) : (
+                                                                                    <SelectItem
+                                                                                        value="none"
+                                                                                        disabled
+                                                                                    >
+                                                                                        No types
+                                                                                        found
+                                                                                    </SelectItem>
+                                                                                )}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                            <FormField
+                                                                control={paymentForm.control}
+                                                                name="bank_id"
+                                                                render={({ field }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>Bank</FormLabel>
+                                                                        <Select
+                                                                            onValueChange={
+                                                                                field.onChange
+                                                                            }
+                                                                            defaultValue={
+                                                                                field.value
+                                                                            }
+                                                                        >
+                                                                            <FormControl>
+                                                                                <SelectTrigger>
+                                                                                    <SelectValue placeholder="Select bank" />
+                                                                                </SelectTrigger>
+                                                                            </FormControl>
+                                                                            <SelectContent>
+                                                                                {banks?.length ? (
+                                                                                    banks.map(
+                                                                                        (bank) => (
+                                                                                            <SelectItem
+                                                                                                key={
+                                                                                                    bank.id
+                                                                                                }
+                                                                                                value={
+                                                                                                    bank.id
+                                                                                                }
+                                                                                            >
+                                                                                                {
+                                                                                                    bank.abbreviation
+                                                                                                }{' '}
+                                                                                                -{' '}
+                                                                                                {
+                                                                                                    bank.name
+                                                                                                }
+                                                                                            </SelectItem>
+                                                                                        ),
+                                                                                    )
+                                                                                ) : (
+                                                                                    <SelectItem
+                                                                                        value="none"
+                                                                                        disabled
+                                                                                    >
+                                                                                        No banks
+                                                                                        found
+                                                                                    </SelectItem>
+                                                                                )}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <FormField
+                                                            control={paymentForm.control}
+                                                            name="provider"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Provider (Bank Name)
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            placeholder="e.g. BCA, Mandiri"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={paymentForm.control}
+                                                            name="account_number"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Account Number
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            placeholder="Number"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={paymentForm.control}
+                                                            name="account_holder"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Account Holder
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            placeholder="Name"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={paymentForm.control}
+                                                            name="description"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>
+                                                                        Description
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            placeholder="e.g. Main account"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <DialogFooter>
+                                                            <Button
+                                                                type="submit"
+                                                                disabled={isAddingPayment}
+                                                                className="w-full sm:w-auto"
+                                                            >
+                                                                {isAddingPayment
+                                                                    ? 'Adding...'
+                                                                    : 'Add Payment'}
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </form>
+                                                </Form>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {paymentMethods.length === 0 ? (
+                                            <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 border border-dashed border-border">
+                                                <CreditCardIcon className="w-10 h-10 mb-3 opacity-20" />
+                                                <p className="text-sm font-medium">
+                                                    No payment methods found
+                                                </p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Add a payment method for easier checkout.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid gap-4">
+                                                {paymentMethods.map((pm: any, idx: number) => (
+                                                    <div
+                                                        key={pm.id || idx}
+                                                        className="flex items-start justify-between p-4 border bg-card hover:bg-muted/10 transition-colors"
+                                                    >
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="mt-1 p-2 bg-primary/10 rounded-full">
+                                                                <CreditCardIcon className="size-4 text-primary" />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-semibold text-sm">
+                                                                        {pm.provider}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm text-foreground/80">
+                                                                    {pm.account_number}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {pm.account_holder} -{' '}
+                                                                    {pm.description ||
+                                                                        'No description'}
                                                                 </p>
                                                             </div>
                                                         </div>

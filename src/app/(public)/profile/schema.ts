@@ -25,5 +25,15 @@ export const addressSchema = z.object({
     is_default: z.boolean(),
 });
 
+export const paymentMethodSchema = z.object({
+    payment_type_id: z.string().uuid('Invalid payment type'),
+    bank_id: z.string().uuid('Invalid bank'),
+    provider: z.string().min(2, 'Provider must be at least 2 characters long'),
+    account_number: z.string().min(5, 'Account number must be at least 5 characters long'),
+    account_holder: z.string().min(3, 'Account holder name must be at least 3 characters long'),
+    description: z.string().optional(),
+});
+
 export type ProfileSchema = z.infer<typeof profileSchema>;
 export type AddressSchema = z.infer<typeof addressSchema>;
+export type PaymentMethodSchema = z.infer<typeof paymentMethodSchema>;

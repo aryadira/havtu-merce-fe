@@ -29,6 +29,10 @@ export interface ProductItem {
     price: number;
     qty_in_stock: number;
     configurations: ProductConfiguration[];
+    product?: {
+        name: string;
+        description: string;
+    };
     created_at: string;
     updated_at: string;
 }
