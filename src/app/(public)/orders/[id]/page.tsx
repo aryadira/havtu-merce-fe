@@ -22,6 +22,7 @@ import { Badge } from '@/src/components/ui/badge';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, ShoppingBag } from 'lucide-react';
 import { Skeleton } from '@/src/components/ui/skeleton';
+import { formatPrice } from '@/src/lib/utils';
 
 export default function OrderDetailPage() {
     const { id } = useParams();
@@ -67,12 +68,6 @@ export default function OrderDetailPage() {
         );
     }
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-        }).format(amount);
-    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('id-ID', {
@@ -153,11 +148,11 @@ export default function OrderDetailPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            {formatCurrency(Number(item.price))}
+                                            {formatPrice(Number(item.price))}
                                         </TableCell>
                                         <TableCell className="text-center">{item.qty}</TableCell>
                                         <TableCell className="text-right font-medium">
-                                            {formatCurrency(Number(item.price) * item.qty)}
+                                            {formatPrice(Number(item.price) * item.qty)}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -201,7 +196,7 @@ export default function OrderDetailPage() {
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-center text-lg font-bold">
                             <span>Total Amount</span>
-                            <span>{formatCurrency(Number(order.order_total))}</span>
+                            <span>{formatPrice(Number(order.order_total))}</span>
                         </div>
                     </CardContent>
                     <CardFooter className="bg-gray-50 p-6 flex justify-end rounded-b-lg">

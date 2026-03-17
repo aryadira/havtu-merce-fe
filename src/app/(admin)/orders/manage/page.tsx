@@ -50,6 +50,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useManageOrders } from '@/src/lib/hooks/order';
 import { OrderResponse } from '@/src/types/order';
+import { formatPrice } from '@/src/lib/utils';
+import { PageLoader } from '@/src/components/ui/page-loader';
+import { getOrderColumns } from './columns';
 
 interface OrderDetailActionsProps {
     orderId: string;
@@ -57,7 +60,14 @@ interface OrderDetailActionsProps {
 
 export const dynamic = 'force-dynamic';
 
-// Main component with logic
+export default function OrderList() {
+    return (
+        <Suspense fallback={<Skeleton className="w-full h-96" />}>
+            <OrderListContent />
+        </Suspense>
+    );
+}
+
 function OrderListContent() {
     const { page, limit, next, prev } = usePagination();
     const { data: orders, isLoading: loadOrders } = useManageOrders({ page, limit });
@@ -72,7 +82,7 @@ function OrderListContent() {
 
     const table = useReactTable<OrderResponse>({
         data: ordersData ?? [],
-        columns,
+        columns: getOrderColumns({ page, limit }),
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
@@ -149,7 +159,10 @@ function OrderListContent() {
                     <TableBody>
                         {loadOrders ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <TableCell
+                                    colSpan={getOrderColumns({ page, limit }).length}
+                                    className="h-24 text-center"
+                                >
                                     <div className="flex flex-col gap-2 w-full">
                                         {Array.from({ length: 10 }).map((_, i) => (
                                             <Skeleton key={i} className="w-full h-10" />
@@ -175,7 +188,10 @@ function OrderListContent() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <TableCell
+                                    colSpan={getOrderColumns({ page, limit }).length}
+                                    className="h-24 text-center"
+                                >
                                     No results.
                                 </TableCell>
                             </TableRow>
@@ -210,123 +226,7 @@ function OrderListContent() {
     );
 }
 
-// Export a wrapper that includes Suspense
-export default function OrderList() {
-    return (
-        <Suspense fallback={<Skeleton className="w-full h-96" />}>
-            <OrderListContent />
-        </Suspense>
-    );
-}
-
-const columns: ColumnDef<OrderResponse>[] = [
-    {
-        accessorKey: 'order_number',
-        header: 'Order #',
-        cell: ({ row }) => <div className="text-xs font-bold">{row.getValue('order_number')}</div>,
-    },
-    {
-        accessorKey: 'user_id',
-        header: 'User ID',
-        cell: ({ row }) => (
-            <div className="text-[10px] text-muted-foreground truncate max-w-[80px]" title={row.getValue('user_id')}>
-                {row.getValue('user_id')}
-            </div>
-        ),
-    },
-    {
-        accessorKey: 'order_total',
-        header: () => <div className="text-right">Amount</div>,
-        cell: ({ row }) => {
-            const amount = Number(row.getValue('order_total'));
-            const formatted = new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-            }).format(amount);
-            return <div className="text-right font-bold text-emerald-600">{formatted}</div>;
-        },
-    },
-    {
-        accessorKey: 'order_status_id',
-        header: 'Status',
-        cell: ({ row }) => {
-            const status = row.original.order_status;
-            const statusId = row.original.order_status_id;
-            return (
-                <div className="font-medium text-[10px] uppercase tracking-wider bg-gray-100 px-2 py-1 rounded w-fit">
-                    {status?.label || statusId.split('-')[0]}
-                </div>
-            );
-        },
-    },
-    {
-        accessorKey: 'payment_status_id',
-        header: 'Payment',
-        cell: ({ row }) => {
-            const status = row.original.payment_status;
-            const statusId = row.original.payment_status_id;
-            const slug = status?.slug || (statusId.includes('46b3e972') ? 'unpaid' : ''); // Fallback based on provided example ID if needed, but better to just show label if exists
-
-            return (
-                <div
-                    className={`text-[10px] font-bold uppercase ${
-                        slug === 'paid'
-                            ? 'text-green-600'
-                            : slug === 'unpaid'
-                              ? 'text-red-500'
-                              : 'text-gray-500'
-                    }`}
-                >
-                    {status?.label || (slug === 'unpaid' ? 'UNPAID' : statusId.split('-')[0])}
-                </div>
-            );
-        },
-    },
-    {
-        accessorKey: 'shipping_address',
-        header: 'Shipping Address',
-        cell: ({ row }) => {
-            const addressStr = row.getValue('shipping_address') as string;
-            try {
-                const addr = JSON.parse(addressStr);
-                return (
-                    <div className="text-[10px] leading-tight max-w-[150px] truncate" title={`${addr.street}, ${addr.city}`}>
-                        {addr.street}, {addr.city}
-                    </div>
-                );
-            } catch (e) {
-                return <div className="text-[10px] truncate max-w-[150px]">{addressStr}</div>;
-            }
-        },
-    },
-    {
-        accessorKey: 'created_at',
-        header: () => <div className="text-right">Ordered At</div>,
-        cell: ({ row }) => {
-            const date = new Date(row.getValue('created_at'));
-            return (
-                <div className="text-right text-xs">
-                    {date.toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    })}
-                </div>
-            );
-        },
-    },
-    {
-        id: 'actions',
-        header: 'Actions',
-        enableHiding: false,
-        cell: ({ row }) => <OrderActions orderId={row.original.id} />,
-    },
-];
-
-function OrderActions({ orderId }: OrderDetailActionsProps) {
+export function OrderActions({ orderId }: OrderDetailActionsProps) {
     const router = useRouter();
     const [openMenu, setOpenMenu] = useState(false);
 

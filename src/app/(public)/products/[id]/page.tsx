@@ -11,6 +11,7 @@ import { useProductShopDetail } from '@/src/lib/hooks/product/product-shop';
 import { Minus, Plus, MessageSquare, Heart, Share2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/src/components/ui/tabs';
 import { PageLoader } from '@/src/components/ui/page-loader';
+import { formatPrice } from '@/src/lib/utils';
 
 export default function ProductDetail() {
     return (
@@ -116,13 +117,6 @@ function ProductDetailContent() {
         router.push(`/checkout?pid=${product.id}&itemId=${selectedItem.id}`);
     };
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(price);
-    };
 
     // Helper to get configuration name combination
     const getConfigName = (item: any) => {

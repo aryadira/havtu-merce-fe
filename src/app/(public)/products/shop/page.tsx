@@ -9,6 +9,7 @@ import { usePagination } from '@/src/hooks/use-pagination';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { PackageX } from 'lucide-react';
 import { useProductShopList } from '@/src/lib/hooks/product/product-shop';
+import { containerVariantsFast, itemVariants } from '@/src/lib/constants/animations';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,32 +28,6 @@ function ShopPageContent() {
     const productData = products?.data || [];
     const meta = products?.meta;
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.05,
-            },
-        },
-    };
-
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: {
-                type: 'spring',
-                stiffness: 100,
-                damping: 20,
-            } as const,
-        },
-    };
-
-    // console.log(productData);
-
-    // Loading state
     if (loadProducts) {
         return (
             <section className="container py-12">
@@ -61,9 +36,7 @@ function ShopPageContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="space-y-4">
-                            {/* Image Skeleton */}
                             <Skeleton className="aspect-square w-full " />
-                            {/* Content Skeleton */}
                             <div className="space-y-2">
                                 <Skeleton className="h-4 w-3/4" />
                                 <Skeleton className="h-3 w-1/2" />
@@ -79,7 +52,6 @@ function ShopPageContent() {
         );
     }
 
-    // Empty state
     if (productData.length === 0) {
         return (
             <section className="container py-12">
@@ -100,16 +72,14 @@ function ShopPageContent() {
         );
     }
 
-    // Normal state
     return (
         <section className="container py-12">
             <ProductHeader />
 
-            {/* Product grid */}
             <AnimatePresence mode="wait">
                 <motion.div
                     key={page}
-                    variants={containerVariants}
+                    variants={containerVariantsFast}
                     initial="hidden"
                     animate="visible"
                     exit={{ opacity: 0 }}

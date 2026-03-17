@@ -21,6 +21,8 @@ import {
     DialogTrigger,
 } from '@/src/components/ui/dialog';
 import { Badge } from '@/src/components/ui/badge';
+import { containerVariants, itemVariants } from '@/src/lib/constants/animations';
+import { formatPrice } from '@/src/lib/utils';
 
 export default function CheckoutPage() {
     return (
@@ -35,36 +37,16 @@ export default function CheckoutPage() {
 }
 
 function CheckoutContent() {
-    const searchParams = useSearchParams();
+    const params = useSearchParams();
     const router = useRouter();
 
-    const pid = searchParams.get('pid');
-    const itemId = searchParams.get('itemId');
-    const qtyParam = searchParams.get('qty');
+    const productId = params.get('product_id');
+    const itemId = params.get('item_id');
+    const qtyParam = params.get('qty');
 
-    const [quantity, setQuantity] = useState(1);
-    const [isInitialized, setIsInitialized] = useState(false);
-
-    useEffect(() => {
-        const storedQty = sessionStorage.getItem('checkout_qty');
-        if (storedQty) {
-            setQuantity(parseInt(storedQty));
-        } else if (qtyParam) {
-            setQuantity(parseInt(qtyParam));
-        }
-        setIsInitialized(true);
-    }, [qtyParam]);
-
-    useEffect(() => {
-        if (isInitialized) {
-            sessionStorage.setItem('checkout_qty', quantity.toString());
-        }
-    }, [quantity, isInitialized]);
-
-    // Fetch real data
     const { data: userData, isLoading: isLoadingUser } = useProfile();
     const { data: shippingMethods, isLoading: isLoadingShipping } = useShippingMethods();
-    const { data: product, isLoading: isLoadingProduct } = useProductShopDetail(pid as string);
+    const { data: product, isLoading: isLoadingProduct } = useProductShopDetail(productId as string);
     const { data: userPaymentMethods, isLoading: isLoadingPayment } = useUserPaymentMethods();
 
     const user = userData;
@@ -72,36 +54,25 @@ function CheckoutContent() {
     const paymentMethodsList = userPaymentMethods || [];
     const shippingList = shippingMethods || [];
 
-    // State for selections
+    const [quantity, setQuantity] = useState(1);
+    const [isInitialized, setIsInitialized] = useState(false);
+
     const [selectedAddress, setSelectedAddress] = useState<any>(null);
     const [shippingMethodId, setShippingMethodId] = useState('');
     const [userPaymentMethodId, setUserPaymentMethodId] = useState('');
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
-    // Pre-select defaults
-    useEffect(() => {
-        if (addresses.length > 0) {
-            const defaultAddr = addresses.find((a: any) => a.is_default) || addresses[0];
-            setSelectedAddress(defaultAddr);
-        }
-    }, [addresses]);
-
-    useEffect(() => {
-        if (shippingList.length > 0 && !shippingMethodId) {
-            setShippingMethodId(shippingList[0].id);
-        }
-    }, [shippingList, shippingMethodId]);
-
-    useEffect(() => {
-        if (paymentMethodsList.length > 0 && !userPaymentMethodId) {
-            setUserPaymentMethodId(paymentMethodsList[0].id);
-        }
-    }, [paymentMethodsList, userPaymentMethodId]);
-
-    // UI states matching screenshot
     const [extraProtection, setExtraProtection] = useState(true);
     const [shippingInsurance, setShippingInsurance] = useState(false);
     const [note, setNote] = useState('');
+
+    const selectedItem = product?.items?.find((i: any) => i.id === itemId) || product?.items?.[0];
+    const mainImage = product?.images?.[0]?.image_url || '';
+
+    const variantName =
+        selectedItem?.configurations
+            ?.map((c: any) => c.product_variation_option?.value)
+            .join(', ') || '';
 
     const { mutate: checkout, isPending: isCheckingOut } = useCheckout({
         onSuccess: (data) => {
@@ -121,7 +92,6 @@ function CheckoutContent() {
             toast.error('Mohon lengkapi alamat dan metode pembayaran.');
             return;
         }
-
         checkout({
             items: [
                 {
@@ -141,23 +111,6 @@ function CheckoutContent() {
         });
     };
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(price);
-    };
-
-    const selectedItem = product?.items?.find((i: any) => i.id === itemId) || product?.items?.[0];
-    const mainImage = product?.images?.[0]?.image_url || '';
-
-    // Construct variant name
-    const variantName =
-        selectedItem?.configurations
-            ?.map((c: any) => c.product_variation_option?.value)
-            .join(', ') || '';
-
     const handleIncrease = () => {
         const maxStock = selectedItem?.qty_in_stock || 999;
         if (quantity < maxStock) {
@@ -166,7 +119,52 @@ function CheckoutContent() {
             toast.error(`Stok maksimal adalah ${maxStock}`);
         }
     };
+
     const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+    useEffect(() => {
+        const storedQty = sessionStorage.getItem('checkout_qty');
+        if (storedQty) {
+            setQuantity(parseInt(storedQty));
+        } else if (qtyParam) {
+            setQuantity(parseInt(qtyParam));
+        }
+        setIsInitialized(true);
+    }, [qtyParam]);
+
+    useEffect(() => {
+        if (isInitialized) {
+            sessionStorage.setItem('checkout_qty', quantity.toString());
+        }
+    }, [quantity, isInitialized]);
+
+    useEffect(() => {
+        if (addresses.length > 0) {
+            const defaultAddr = addresses.find((a: any) => a.is_default) || addresses[0];
+            setSelectedAddress(defaultAddr);
+        }
+    }, [addresses]);
+
+    useEffect(() => {
+        if (shippingList.length > 0 && !shippingMethodId) {
+            setShippingMethodId(shippingList[0].id);
+        }
+    }, [shippingList, shippingMethodId]);
+
+    useEffect(() => {
+        if (paymentMethodsList.length > 0 && !userPaymentMethodId) {
+            setUserPaymentMethodId(paymentMethodsList[0].id);
+        }
+    }, [paymentMethodsList, userPaymentMethodId]);
+
+    const price = selectedItem?.price || 0;
+    const subtotal = price * quantity;
+    const shippingCost = shippingList.find((s: any) => s.id === shippingMethodId)?.price || 0;
+    const protectionCost = extraProtection ? 84500 : 0;
+    const insuranceCost = shippingInsurance ? 52300 : 0;
+    const discount = 20000;
+
+    const totalPayment = subtotal + shippingCost + protectionCost + insuranceCost - discount;
 
     if (isLoadingUser || isLoadingShipping || isLoadingProduct || isLoadingPayment) {
         return <PageLoader message="Menyiapkan pembayaran..." spinnerColor="text-emerald-500" />;
@@ -182,38 +180,6 @@ function CheckoutContent() {
             </div>
         );
     }
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1,
-            },
-        },
-    };
-
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: {
-                type: 'spring',
-                stiffness: 100,
-                damping: 20,
-            } as const,
-        },
-    };
-
-    const price = selectedItem?.price || 0;
-    const subtotal = price * quantity;
-    const shippingCost = shippingList.find((s: any) => s.id === shippingMethodId)?.price || 0;
-    const protectionCost = extraProtection ? 84500 : 0;
-    const insuranceCost = shippingInsurance ? 52300 : 0;
-    const discount = 20000;
-
-    const totalPayment = subtotal + shippingCost + protectionCost + insuranceCost - discount;
 
     return (
         <motion.div
@@ -242,99 +208,97 @@ function CheckoutContent() {
                                 Alamat Pengiriman
                             </h2>
                             <div className="flex items-start justify-between">
-                                    {selectedAddress ? (
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <MapPin className="w-4 h-4 text-emerald-500" />
-                                                <span className="font-semibold text-[15px]">
-                                                    {selectedAddress.is_default ? 'Utama' : 'Rumah'}{' '}
-                                                    <span className="text-gray-400 font-normal mx-1">
-                                                        •
-                                                    </span>{' '}
-                                                    {user?.profile?.fullname}
-                                                </span>
-                                            </div>
-                                            <p className="text-gray-600 text-[15px] leading-relaxed max-w-xl">
-                                                {selectedAddress.address}, {selectedAddress.city},{' '}
-                                                {selectedAddress.province},{' '}
-                                                {selectedAddress.country},{' '}
-                                                {user?.profile?.phone_number}
-                                            </p>
+                                {selectedAddress ? (
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <MapPin className="w-4 h-4 text-emerald-500" />
+                                            <span className="font-semibold text-[15px]">
+                                                {selectedAddress.is_default ? 'Utama' : 'Rumah'}{' '}
+                                                <span className="text-gray-400 font-normal mx-1">
+                                                    •
+                                                </span>{' '}
+                                                {user?.profile?.fullname}
+                                            </span>
                                         </div>
-                                    ) : (
-                                        <p className="text-sm text-red-500">
-                                            Alamat belum diatur. Silakan tambah alamat di profil.
+                                        <p className="text-gray-600 text-[15px] leading-relaxed max-w-xl">
+                                            {selectedAddress.address}, {selectedAddress.city},{' '}
+                                            {selectedAddress.province}, {selectedAddress.country},{' '}
+                                            {user?.profile?.phone_number}
                                         </p>
-                                    )}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-red-500">
+                                        Alamat belum diatur. Silakan tambah alamat di profil.
+                                    </p>
+                                )}
 
-                                    <Dialog
-                                        open={isAddressModalOpen}
-                                        onOpenChange={setIsAddressModalOpen}
-                                    >
-                                        <DialogTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="rounded-full text-xs font-semibold h-8 px-4 text-gray-600 border-gray-300"
-                                            >
-                                                {selectedAddress ? 'Ganti Alamat' : 'Atur Alamat'}
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
-                                            <DialogHeader className="p-6 pb-0">
-                                                <DialogTitle>Pilih Alamat Pengiriman</DialogTitle>
-                                            </DialogHeader>
-                                            <div className="p-6 max-h-[60vh] overflow-y-auto flex flex-col gap-3">
-                                                {addresses.map((addr: any, idx: number) => (
-                                                    <div
-                                                        key={addr.id || idx}
-                                                        onClick={() => {
-                                                            setSelectedAddress(addr);
-                                                            setIsAddressModalOpen(false);
-                                                        }}
-                                                        className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all hover:border-emerald-500 hover:bg-emerald-50/30 ${
-                                                            selectedAddress?.id === addr.id
-                                                                ? 'border-emerald-500 bg-emerald-50/50'
-                                                                : 'border-gray-200'
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="font-bold text-sm text-gray-800">
-                                                                {user?.profile?.fullname}
-                                                            </span>
-                                                            {addr.is_default && (
-                                                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[10px] h-5 border-emerald-200">
-                                                                    Utama
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-xs text-gray-500 mb-1">
-                                                            {user?.profile?.phone_number}
-                                                        </p>
-                                                        <p className="text-sm text-gray-600 line-clamp-2">
-                                                            {addr.address}, {addr.city},{' '}
-                                                            {addr.province}, {addr.postal_code},{' '}
-                                                            {addr.country}
-                                                        </p>
-                                                        {selectedAddress?.id === addr.id && (
-                                                            <div className="mt-3 flex items-center gap-1 text-emerald-600 text-xs font-bold">
-                                                                <Check className="w-3.5 h-3.5" />{' '}
-                                                                Terpilih
-                                                            </div>
+                                <Dialog
+                                    open={isAddressModalOpen}
+                                    onOpenChange={setIsAddressModalOpen}
+                                >
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="rounded-full text-xs font-semibold h-8 px-4 text-gray-600 border-gray-300"
+                                        >
+                                            {selectedAddress ? 'Ganti Alamat' : 'Atur Alamat'}
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+                                        <DialogHeader className="p-6 pb-0">
+                                            <DialogTitle>Pilih Alamat Pengiriman</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="p-6 max-h-[60vh] overflow-y-auto flex flex-col gap-3">
+                                            {addresses.map((addr: any, idx: number) => (
+                                                <div
+                                                    key={addr.id || idx}
+                                                    onClick={() => {
+                                                        setSelectedAddress(addr);
+                                                        setIsAddressModalOpen(false);
+                                                    }}
+                                                    className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all hover:border-emerald-500 hover:bg-emerald-50/30 ${
+                                                        selectedAddress?.id === addr.id
+                                                            ? 'border-emerald-500 bg-emerald-50/50'
+                                                            : 'border-gray-200'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="font-bold text-sm text-gray-800">
+                                                            {user?.profile?.fullname}
+                                                        </span>
+                                                        {addr.is_default && (
+                                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[10px] h-5 border-emerald-200">
+                                                                Utama
+                                                            </Badge>
                                                         )}
                                                     </div>
-                                                ))}
+                                                    <p className="text-xs text-gray-500 mb-1">
+                                                        {user?.profile?.phone_number}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600 line-clamp-2">
+                                                        {addr.address}, {addr.city}, {addr.province}
+                                                        , {addr.postal_code}, {addr.country}
+                                                    </p>
+                                                    {selectedAddress?.id === addr.id && (
+                                                        <div className="mt-3 flex items-center gap-1 text-emerald-600 text-xs font-bold">
+                                                            <Check className="w-3.5 h-3.5" />{' '}
+                                                            Terpilih
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
 
-                                                <Button
-                                                    variant="outline"
-                                                    className="mt-2 border-dashed border-2 py-6 text-gray-500 hover:text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50"
-                                                    onClick={() => router.push('/profile')}
-                                                >
-                                                    Tambah Alamat Baru
-                                                </Button>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
+                                            <Button
+                                                variant="outline"
+                                                className="mt-2 border-dashed border-2 py-6 text-gray-500 hover:text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50"
+                                                onClick={() => router.push('/profile')}
+                                            >
+                                                Tambah Alamat Baru
+                                            </Button>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </Card>
 
@@ -544,7 +508,8 @@ function CheckoutContent() {
                                 ))}
                                 {paymentMethodsList.length === 0 && (
                                     <p className="text-sm text-gray-400 italic p-2">
-                                        Metode pembayaran belum ditambahkan. Silakan tambah di profil.
+                                        Metode pembayaran belum ditambahkan. Silakan tambah di
+                                        profil.
                                     </p>
                                 )}
                             </div>
@@ -629,7 +594,7 @@ function CheckoutContent() {
 
                             <p className="text-center text-[10px] text-gray-400 mt-4 px-2 leading-relaxed">
                                 Dengan melanjutkan pembayaran, kamu menyetujui S&K{' '}
-                                <span className="border-b border-gray-400 pb-[1px] cursor-pointer">
+                                <span className="border-b border-gray-400 pb-px cursor-pointer">
                                     Asuransi Pengiriman & Proteksi
                                 </span>
                                 .

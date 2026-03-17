@@ -73,6 +73,8 @@ import {
 } from '@/src/lib/hooks/user/user-payment-method';
 import { useBanks } from '@/src/lib/hooks/bank/bank';
 import { usePaymentTypes } from '@/src/lib/hooks/payment-type/payment-type';
+import { getInitials, formatDate } from '@/src/lib/utils';
+import { containerVariants, itemVariants } from '@/src/lib/constants/animations';
 
 export default function ProfilePage() {
     return (
@@ -83,19 +85,20 @@ export default function ProfilePage() {
 }
 
 function ProfilePageContent() {
-    const { data: user, isLoading } = useProfile();
-    const { data: payment_methods } = useUserPaymentMethods();
     const { data: banks } = useBanks();
+    const { data: user, isLoading: loadProfile } = useProfile();
     const { data: paymentTypes } = usePaymentTypes();
+    const { data: paymentMethods } = useUserPaymentMethods();
+
+    const profile = user.profile || {};
+    const addresses = (profile as any).addresses || [];
+    const createdAt = (user as any).createdAt;
 
     const { mutate: updateUser, isPending } = useUpdateUser();
 
-    const [isEditing, setIsEditing] = useState(false);
-
-    console.log(paymentTypes);
-    console.log(banks);
-
-    const form = useForm<ProfileSchema>({
+    // Profile Form
+    const [isProfileEditing, setProfileIsEditing] = useState(false);
+    const profileForm = useForm<ProfileSchema>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
             fullname: '',
@@ -108,63 +111,7 @@ function ProfilePageContent() {
         },
     });
 
-    useEffect(() => {
-        if (user) {
-            const userGender = user.profile?.gender as string | undefined;
-            let normalizedGender = UserGender.PREFER_NOT_TO_SAY;
-
-            if (userGender) {
-                const lowerUserId = userGender.toLowerCase();
-                if (lowerUserId === 'prefer not to say' || lowerUserId === 'prefer-not-to-say') {
-                    normalizedGender = UserGender.PREFER_NOT_TO_SAY;
-                } else if (Object.values(UserGender).includes(lowerUserId as UserGender)) {
-                    normalizedGender = lowerUserId as UserGender;
-                }
-            }
-
-            form.reset({
-                fullname: user.profile?.fullname || '',
-                username: user.username || '',
-                phone_number: user.profile?.phone_number || '',
-                email: user.email || '',
-                gender: normalizedGender,
-                birthdate: user.profile?.birthdate
-                    ? new Date(user.profile.birthdate).toISOString().split('T')[0]
-                    : '',
-                avatar: user.profile?.avatar || '',
-            });
-        }
-    }, [user, form]);
-
-    const getInitials = (name?: string) => {
-        return (name || 'User')
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-    };
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
-    const { mutate: createAddress, isPending: isAddingAddress } = useCreateAddress({
-        onSuccess: () => {
-            toast.success('Address added successfully');
-            setIsAddAddressOpen(false);
-            addressForm.reset();
-        },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Failed to add address');
-        },
-    });
-
+    // Address Form
     const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
     const addressForm = useForm<AddressSchema>({
         resolver: zodResolver(addressSchema),
@@ -178,6 +125,18 @@ function ProfilePageContent() {
         },
     });
 
+    const { mutate: createAddress, isPending: isAddingAddress } = useCreateAddress({
+        onSuccess: () => {
+            toast.success('Address added successfully');
+            setIsAddAddressOpen(false);
+            addressForm.reset();
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Failed to add address');
+        },
+    });
+
+    // Payment Method Form
     const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
     const paymentForm = useForm<PaymentMethodSchema>({
         resolver: zodResolver(paymentMethodSchema),
@@ -205,9 +164,9 @@ function ProfilePageContent() {
     const handleUpdateProfile = async () => {
         if (!user) return;
         try {
-            const formData = form.getValues();
-            updateUser({ id: user.id, data: formData });
-            setIsEditing(false);
+            const profileFormData = profileForm.getValues();
+            updateUser({ id: user.id, data: profileFormData });
+            setProfileIsEditing(false);
             toast.success('Profile updated successfully');
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -222,7 +181,36 @@ function ProfilePageContent() {
         createPaymentMethod(data);
     };
 
-    if (isLoading) {
+
+    useEffect(() => {
+        if (user) {
+            const userGender = user.profile?.gender as string | undefined;
+            let normalizedGender = UserGender.PREFER_NOT_TO_SAY;
+
+            if (userGender) {
+                const lowerUserId = userGender.toLowerCase();
+                if (lowerUserId === 'prefer not to say' || lowerUserId === 'prefer-not-to-say') {
+                    normalizedGender = UserGender.PREFER_NOT_TO_SAY;
+                } else if (Object.values(UserGender).includes(lowerUserId as UserGender)) {
+                    normalizedGender = lowerUserId as UserGender;
+                }
+            }
+
+            profileForm.reset({
+                fullname: user.profile?.fullname || '',
+                username: user.username || '',
+                phone_number: user.profile?.phone_number || '',
+                email: user.email || '',
+                gender: normalizedGender,
+                birthdate: user.profile?.birthdate
+                    ? new Date(user.profile.birthdate).toISOString().split('T')[0]
+                    : '',
+                avatar: user.profile?.avatar || '',
+            });
+        }
+    }, [user, profileForm]);
+
+    if (loadProfile) {
         return <PageLoader message="Memuat profil..." />;
     }
 
@@ -236,34 +224,6 @@ function ProfilePageContent() {
             </div>
         );
     }
-
-    const profile = user.profile || {};
-    const addresses = (profile as any).addresses || [];
-    const paymentMethods = payment_methods || [];
-    const createdAt = (user as any).createdAt;
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1,
-            },
-        },
-    };
-
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: {
-                type: 'spring',
-                stiffness: 100,
-                damping: 20,
-            } as const,
-        },
-    };
 
     return (
         <motion.div
@@ -320,7 +280,7 @@ function ProfilePageContent() {
 
                         <div className="flex gap-2 mt-4 md:mt-0 relative min-w-[120px] justify-end">
                             <AnimatePresence mode="wait">
-                                {!isEditing ? (
+                                {!isProfileEditing ? (
                                     <motion.div
                                         key="edit-btn"
                                         initial={{ opacity: 0, scale: 0.9 }}
@@ -329,7 +289,7 @@ function ProfilePageContent() {
                                         transition={{ duration: 0.2 }}
                                     >
                                         <Button
-                                            onClick={() => setIsEditing(true)}
+                                            onClick={() => setProfileIsEditing(true)}
                                             variant="outline"
                                         >
                                             Edit Profile
@@ -345,7 +305,7 @@ function ProfilePageContent() {
                                         className="flex gap-2"
                                     >
                                         <Button
-                                            onClick={() => setIsEditing(false)}
+                                            onClick={() => setProfileIsEditing(false)}
                                             variant="outline"
                                         >
                                             Cancel
@@ -412,22 +372,22 @@ function ProfilePageContent() {
                                             Manage your personal details and public profile info.
                                         </CardDescription>
                                     </CardHeader>
-                                    <Form {...form}>
+                                    <Form {...profileForm}>
                                         <form>
                                             <CardContent className="space-y-6">
                                                 <motion.div
                                                     animate={{
-                                                        backgroundColor: isEditing
+                                                        backgroundColor: isProfileEditing
                                                             ? 'var(--muted-foreground-opacity-5)'
                                                             : 'transparent',
-                                                        opacity: isEditing ? 1 : 0.9,
+                                                        opacity: isProfileEditing ? 1 : 0.9,
                                                     }}
                                                     transition={{ duration: 0.3 }}
                                                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
                                                 >
                                                     <div className="space-y-2">
                                                         <FormField
-                                                            control={form.control}
+                                                            control={profileForm.control}
                                                             name="fullname"
                                                             render={({ field }) => (
                                                                 <FormItem>
@@ -437,7 +397,7 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="text"
                                                                             placeholder="Ubah nama lengkap"
-                                                                            disabled={!isEditing}
+                                                                            disabled={!isProfileEditing}
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -448,7 +408,7 @@ function ProfilePageContent() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <FormField
-                                                            control={form.control}
+                                                            control={profileForm.control}
                                                             name="username"
                                                             render={({ field }) => (
                                                                 <FormItem>
@@ -458,7 +418,7 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="text"
                                                                             placeholder="Ubah username"
-                                                                            disabled={!isEditing}
+                                                                            disabled={!isProfileEditing}
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -469,7 +429,7 @@ function ProfilePageContent() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <FormField
-                                                            control={form.control}
+                                                            control={profileForm.control}
                                                             name="email"
                                                             render={({ field }) => (
                                                                 <FormItem>
@@ -481,7 +441,7 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="email"
                                                                             placeholder="Ubah email"
-                                                                            disabled={!isEditing}
+                                                                            disabled={!isProfileEditing}
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -492,7 +452,7 @@ function ProfilePageContent() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <FormField
-                                                            control={form.control}
+                                                            control={profileForm.control}
                                                             name="phone_number"
                                                             render={({ field }) => (
                                                                 <FormItem>
@@ -504,7 +464,7 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="tel"
                                                                             placeholder="Ubah nomor telepon"
-                                                                            disabled={!isEditing}
+                                                                            disabled={!isProfileEditing}
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -515,7 +475,7 @@ function ProfilePageContent() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <FormField
-                                                            control={form.control}
+                                                            control={profileForm.control}
                                                             name="birthdate"
                                                             render={({ field }) => (
                                                                 <FormItem>
@@ -525,7 +485,7 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="date"
                                                                             placeholder="Ubah tanggal lahir"
-                                                                            disabled={!isEditing}
+                                                                            disabled={!isProfileEditing}
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -536,18 +496,18 @@ function ProfilePageContent() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <FormField
-                                                            control={form.control}
+                                                            control={profileForm.control}
                                                             name="gender"
                                                             render={({ field }) => (
                                                                 <FormItem>
                                                                     <FormLabel>Gender</FormLabel>
                                                                     <Select
-                                                                        disabled={!isEditing}
+                                                                        disabled={!isProfileEditing}
                                                                         onValueChange={
                                                                             field.onChange
                                                                         }
                                                                         value={
-                                                                            isEditing
+                                                                            isProfileEditing
                                                                                 ? field.value
                                                                                 : user.profile
                                                                                       .gender

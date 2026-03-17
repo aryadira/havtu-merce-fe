@@ -3,6 +3,7 @@
 import { useCart } from '@/src/context/cart-context';
 import { Separator } from '@/src/components/ui/separator';
 import { useGetCarts } from '@/src/lib/hooks/cart';
+import { formatPrice } from '@/src/lib/utils';
 
 interface OrderSummaryProps {
     showDetails?: boolean;
@@ -23,10 +24,7 @@ export function OrderSummary({ showDetails = false }: OrderSummaryProps) {
                 <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>
-                        {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                        }).format(subtotal)}
+                        {formatPrice(subtotal)}
                     </span>
                 </div>
 
@@ -47,10 +45,7 @@ export function OrderSummary({ showDetails = false }: OrderSummaryProps) {
                 <div className="flex justify-between font-medium text-lg">
                     <span>Total</span>
                     <span>
-                        {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                        }).format(subtotal)}
+                        {formatPrice(subtotal)}
                     </span>
                 </div>
             </div>

@@ -6,14 +6,13 @@ import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { useAddToCart } from '@/src/lib/hooks/cart';
 import { useMe } from '@/src/lib/hooks/auth';
+import { formatPrice } from '@/src/lib/utils';
 
 interface ProductShopProps {
     productItem: ProductShop;
 }
 
 export function ProductCard({ productItem }: ProductShopProps) {
-    // console.log(productItem)
-    // const { addItem } = useCart();
     const { data: user } = useMe();
     const { mutate: addToCart } = useAddToCart();
 
@@ -22,11 +21,13 @@ export function ProductCard({ productItem }: ProductShopProps) {
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        // addToCart({
-        //   user_id: user?.id,
-        //   product_id: productItems.id,
-        //   item_qty: 1,
-        // });
+
+        addToCart({
+            user_id: user?.id,
+            product_id: productItem.id,
+            item_qty: 1,
+        });
+
         toast.success(`${name} added to cart`);
     };
 
@@ -48,10 +49,7 @@ export function ProductCard({ productItem }: ProductShopProps) {
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-primary">
-                            {new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                            }).format(price || 0)}
+                            {formatPrice(price || 0)}
                         </span>
                         <Button
                             size="sm"

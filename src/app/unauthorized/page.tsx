@@ -8,8 +8,9 @@ import UnauthorizedContent from './unauthorized-content';
 export default async function UnauthorizedPage() {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
-    
-    let role = 'buyer'; // Default
+
+    let role = 'buyer';
+
     if (token) {
         try {
             const decoded: any = jwt.decode(token);
@@ -42,7 +43,7 @@ export default async function UnauthorizedPage() {
             <footer className="border-t border-border py-8 mt-16">
                 <div className="container mx-auto">
                     <p className="text-center text-xs text-muted-foreground">
-                        © 2024 MINIMAL.SHOP — All rights reserved
+                        © {new Date().getFullYear()} Havtumerce — All rights reserved
                     </p>
                 </div>
             </footer>

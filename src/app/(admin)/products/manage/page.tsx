@@ -33,11 +33,19 @@ import Link from 'next/link';
 import { usePagination } from '@/src/hooks/use-pagination';
 import { useMe } from '@/src/lib/hooks/auth';
 import { Skeleton } from '@/src/components/ui/skeleton';
-import { getColumns } from './columns';
+import { getProductColumns } from './columns';
 import { ProductItemResponse } from '@/src/types/product';
 import { useProductManageList } from '@/src/lib/hooks/product/product-manage';
 
 export const dynamic = 'force-dynamic';
+
+export default function ProductList() {
+    return (
+        <Suspense fallback={<Skeleton className="w-full h-96" />}>
+            <ProductListContent />
+        </Suspense>
+    );
+}
 
 function ProductListContent() {
     const { page, limit, next, prev } = usePagination();
@@ -57,7 +65,7 @@ function ProductListContent() {
 
     const table = useReactTable<ProductItemResponse>({
         data: productsData ?? [],
-        columns: getColumns(page, limit),
+        columns: getProductColumns({ page, limit }),
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
@@ -151,7 +159,7 @@ function ProductListContent() {
                         {loadProducts ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={getColumns(page, limit).length}
+                                    colSpan={getProductColumns({ page, limit }).length}
                                     className="h-24 text-center"
                                 >
                                     <div className="flex flex-col gap-2 w-full">
@@ -180,7 +188,7 @@ function ProductListContent() {
                         ) : (
                             <TableRow>
                                 <TableCell
-                                    colSpan={getColumns(page, limit).length}
+                                    colSpan={getProductColumns({ page, limit }).length}
                                     className="h-24 text-center"
                                 >
                                     No results.
@@ -216,13 +224,5 @@ function ProductListContent() {
                 </div>
             </div>
         </div>
-    );
-}
-
-export default function ProductList() {
-    return (
-        <Suspense fallback={<Skeleton className="w-full h-96" />}>
-            <ProductListContent />
-        </Suspense>
     );
 }

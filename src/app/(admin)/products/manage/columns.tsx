@@ -4,8 +4,10 @@ import { Button } from '@/src/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 import { ProductItemResponse } from '@/src/types/product';
 import { ProductActions } from './product-actions'; // sesuaikan dengan path
+import { formatPrice } from '@/src/lib/utils';
+import { Pagination } from '@/src/types/pagination';
 
-export const getColumns = (page: number, limit: number): ColumnDef<ProductItemResponse>[] => [
+export const getProductColumns = (pagination: Pagination): ColumnDef<ProductItemResponse>[] => [
     {
         id: 'select',
         header: ({ table }) => (
@@ -44,10 +46,7 @@ export const getColumns = (page: number, limit: number): ColumnDef<ProductItemRe
         cell: ({ row }) => {
             const product = row.original;
             const price = product.price ?? product.items?.[0]?.price ?? 0;
-            const formatted = new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-            }).format(price);
+            const formatted = formatPrice(price);
 
             const hasMultiplePrices =
                 product.items &&
@@ -112,6 +111,12 @@ export const getColumns = (page: number, limit: number): ColumnDef<ProductItemRe
         id: 'actions',
         header: 'Actions',
         enableHiding: false,
-        cell: ({ row }) => <ProductActions productId={row.original.id} page={page} limit={limit} />,
+        cell: ({ row }) => (
+            <ProductActions
+                productId={row.original.id}
+                page={pagination.page}
+                limit={pagination.limit}
+            />
+        ),
     },
 ];

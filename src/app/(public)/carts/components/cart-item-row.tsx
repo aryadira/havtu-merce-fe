@@ -2,10 +2,11 @@
 
 import { Button } from '@/src/components/ui/button';
 import { useRemoveCartItem, useUpdateCartItem } from '@/src/lib/hooks/cart';
-import { CartItem } from '@/src/types/product';
+import { CartItem } from '@/src/types/cart';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { formatPrice } from '@/src/lib/utils';
 
 interface CartItemRowProps {
     item: CartItem;
@@ -46,15 +47,12 @@ export function CartItemRow({ item }: CartItemRowProps) {
                             {item.product.name}
                         </Link>
                         <p className="font-semibold ml-4">
-                            {new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                            }).format((item.product.price || 0) * item.item_qty)}
+                            {formatPrice((item.product.price || 0) * item.item_qty)}
                         </p>
                     </div>
-                    {item.product.user && (
+                    {item.product.shop_name && (
                         <p className="text-sm text-muted-foreground line-clamp-1">
-                            Seller: {item.product.user.fullname}
+                            Seller: {item.product.shop_name}
                         </p>
                     )}
                 </div>

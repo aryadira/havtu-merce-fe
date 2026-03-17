@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Eye, Package, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import { formatPrice } from '@/src/lib/utils';
 
 export default function OrderListPage() {
     const router = useRouter();
@@ -31,12 +32,6 @@ export default function OrderListPage() {
 
     const { data, isLoading, isError } = userOrders({ page, limit });
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-        }).format(amount);
-    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('id-ID', {
@@ -160,7 +155,7 @@ export default function OrderListPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right font-medium">
-                                        {formatCurrency(Number(order.order_total))}
+                                        {formatPrice(Number(order.order_total))}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button
