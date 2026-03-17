@@ -1,6 +1,6 @@
 'use client';
 
-import { useGetOrders } from '@/src/lib/hooks/order';
+import { userOrders } from '@/src/lib/hooks/order';
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
 import {
@@ -29,7 +29,7 @@ export default function OrderListPage() {
     const [page, setPage] = useState(1);
     const limit = 10;
 
-    const { data, isLoading, isError } = useGetOrders({ page, limit });
+    const { data, isLoading, isError } = userOrders({ page, limit });
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -138,27 +138,25 @@ export default function OrderListPage() {
                         <TableBody>
                             {orders.map((order) => (
                                 <TableRow key={order.id}>
-                                    <TableCell>
-                                        {order.order_number || 'N/A'}
-                                    </TableCell>
+                                    <TableCell>{order.order_number || 'N/A'}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="font-medium">
                                                 {formatDate(order.created_at)}
                                             </span>
                                             <span className="text-xs text-muted-foreground">
-                                                {order.order_lines.length} items
+                                                {order.order_lines?.length || 0} items
                                             </span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col gap-1 text-muted-foreground">
-                                            <p>{order.order_status.label}</p>
+                                            <p>{order.order_status?.label || 'N/A'}</p>
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col gap-1 text-muted-foreground">
-                                            <p>{order.payment_status.label}</p>
+                                            <p>{order.payment_status?.label || 'N/A'}</p>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right font-medium">

@@ -8,27 +8,18 @@ const orderKeys = {
     carts: ['carts'] as const,
     lists: () => [...orderKeys.key, 'orders'] as const,
     page: (pagination: Pagination) => [...orderKeys.lists(), pagination] as const,
-    manageLists: () => [...orderKeys.key, 'orders-manage'] as const,
-    managePage: (pagination: Pagination) => [...orderKeys.manageLists(), pagination] as const,
     item: () => [...orderKeys.key, 'item'] as const,
     details: (id: string | undefined) => [...orderKeys.item(), id] as const,
-}
+};
 
-export const useGetOrders = (pagination: Pagination) => {
+export const userOrders = (pagination: Pagination) => {
     return useQuery({
         queryKey: orderKeys.page(pagination),
         queryFn: () => orders.getOrders(pagination),
     });
 };
 
-export const useGetOrdersManage = (pagination: Pagination) => {
-    return useQuery({
-        queryKey: orderKeys.managePage(pagination),
-        queryFn: () => orders.getOrdersManage(pagination),
-    });
-};
-
-export const useGetOrder = (id: string | undefined) => {
+export const userOrder = (id: string | undefined) => {
     return useQuery({
         queryKey: orderKeys.details(id),
         queryFn: () => orders.getOrder(id),

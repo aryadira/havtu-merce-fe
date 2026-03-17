@@ -55,9 +55,9 @@ export interface OrderResponse {
     order_total: string;
     shipping_method_id: string;
     shipping_address: string;
-    order_lines: OrderItemResponse[];
-    order_status: OrderStatus;
-    payment_status: PaymentStatus;
+    order_lines?: OrderItemResponse[];
+    order_status?: OrderStatus;
+    payment_status?: PaymentStatus;
     created_at: string;
     updated_at: string;
 }

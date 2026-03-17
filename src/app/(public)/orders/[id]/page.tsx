@@ -17,7 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/src/components/ui/table';
-import { useGetOrder } from '@/src/lib/hooks/order';
+import { userOrder } from '@/src/lib/hooks/order';
 import { Badge } from '@/src/components/ui/badge';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, ShoppingBag } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function OrderDetailPage() {
     const { id } = useParams();
     const router = useRouter();
 
-    const { data: order, isLoading, isError } = useGetOrder(id as string);
+    const { data: order, isLoading, isError } = userOrder(id as string);
 
     console.log(order);
 
@@ -101,15 +101,15 @@ export default function OrderDetailPage() {
                         Order Details
                         <Badge
                             variant={
-                                order.payment_status.slug === 'paid'
+                                order.payment_status?.slug === 'paid'
                                     ? 'default'
-                                    : order.payment_status.slug === 'unpaid'
+                                    : order.payment_status?.slug === 'unpaid'
                                       ? 'destructive'
                                       : 'secondary'
                             }
                             className="text-sm"
                         >
-                            {order.payment_status.label}
+                            {order.payment_status?.label || 'N/A'}
                         </Badge>
                     </h1>
                     <p className="text-muted-foreground mt-2">
@@ -127,7 +127,7 @@ export default function OrderDetailPage() {
                     <CardHeader>
                         <CardTitle>Order Items</CardTitle>
                         <CardDescription>
-                            You have {order.order_lines.length} items in this order
+                            You have {order.order_lines?.length || 0} items in this order
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -141,11 +141,12 @@ export default function OrderDetailPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {order.order_lines.map((item) => (
+                                {order.order_lines?.map((item) => (
                                     <TableRow key={item.id}>
                                         <TableCell>
                                             <div className="font-medium">
-                                                {item.product_item.product?.name || 'Unknown Product'}
+                                                {item.product_item.product?.name ||
+                                                    'Unknown Product'}
                                             </div>
                                             <div className="text-muted-foreground truncate max-w-[200px]">
                                                 {item.product_item.product?.description}
@@ -154,9 +155,7 @@ export default function OrderDetailPage() {
                                         <TableCell className="text-right">
                                             {formatCurrency(Number(item.price))}
                                         </TableCell>
-                                        <TableCell className="text-center">
-                                            {item.qty}
-                                        </TableCell>
+                                        <TableCell className="text-center">{item.qty}</TableCell>
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(Number(item.price) * item.qty)}
                                         </TableCell>
@@ -185,7 +184,11 @@ export default function OrderDetailPage() {
                                     </div>
                                 );
                             } catch (e) {
-                                return <p className="text-sm text-muted-foreground">{order.shipping_address}</p>;
+                                return (
+                                    <p className="text-sm text-muted-foreground">
+                                        {order.shipping_address}
+                                    </p>
+                                );
                             }
                         })()}
                     </CardContent>
@@ -202,12 +205,12 @@ export default function OrderDetailPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="bg-gray-50 p-6 flex justify-end rounded-b-lg">
-                        {order.payment_status.slug === 'unpaid' && (
+                        {order.payment_status?.slug === 'unpaid' && (
                             <Button size="lg" className="w-full md:w-auto">
                                 Pay Now
                             </Button>
                         )}
-                        {order.payment_status.slug === 'paid' && (
+                        {order.payment_status?.slug === 'paid' && (
                             <div className="flex items-center text-green-600 font-medium">
                                 <CheckCircle2 className="mr-2 h-5 w-5" />
                                 Payment Completed
