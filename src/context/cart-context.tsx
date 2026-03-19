@@ -1,7 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { CartItem, ProductShop, ShippingInfo } from '../types/product';
+import { ProductShop } from '../types/product';
+import { CartItem } from '../types/cart';
+import { ShippingInfo } from '../types/shipping';
 
 interface CartState {
     items: CartItem[];

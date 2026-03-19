@@ -2,7 +2,7 @@ import { OrderResponse } from '@/src/types/order';
 import { ColumnDef } from '@tanstack/react-table';
 import { formatPrice } from '@/src/lib/utils';
 import { Pagination } from '@/src/types/pagination';
-import { OrderActions } from './page';
+import { OrderActions } from './actions';
 
 export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse>[] => [
     {

@@ -1,6 +1,4 @@
-import { Cart } from './cart';
 import { Meta } from './meta';
-import { ShippingInfo } from './shipping';
 import { Shop } from './shop';
 
 export interface ProductConfiguration {
