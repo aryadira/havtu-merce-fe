@@ -59,6 +59,7 @@ export function AppHeader() {
                 </div>
 
                 <nav className="flex items-center gap-2">
+                    <Link href="/products/shop">Shop</Link>
                     <Link href="/carts">
                         <Button variant="ghost" size="sm" className="relative btn-bounce">
                             <ShoppingCart className="h-4 w-4" />
