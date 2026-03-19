@@ -83,7 +83,7 @@ function ProductListContent() {
     });
 
     return (
-        <div className="max-w-4xl">
+        <div className="w-full">
             <h1 className="mb-3 flex items-center gap-2">
                 Hello,{' '}
                 {loadUser ? (

@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, LogOut, Search, Settings, ShoppingBag } from 'lucide-react';
+import { Calendar, File, Home, Inbox, LogOut, Search, Settings, ShoppingBag } from 'lucide-react';
 
 export const SIDEBAR_NAVIGATIONS = [
     {
@@ -6,6 +6,18 @@ export const SIDEBAR_NAVIGATIONS = [
         url: '/dashboard',
         icon: Home,
         roles: ['administrator', 'seller'],
+    },
+    {
+        title: 'App Pages',
+        url: '/app-pages',
+        icon: File,
+        roles: ['administrator'],
+    },
+    {
+        title: 'Permissions ',
+        url: '/permissions',
+        icon: File,
+        roles: ['administrator'],
     },
     {
         title: 'Manage Products',

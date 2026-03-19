@@ -34,6 +34,20 @@ export const paymentMethodSchema = z.object({
     description: z.string().optional(),
 });
 
+export const shopSchema = z.object({
+    shop_type: z.string().min(1, 'Shop Type is required'),
+    shop_name: z.string().min(3, 'Shop Name must be at least 3 characters long'),
+    shop_description: z.string().min(5, 'Shop Description is required'),
+    shop_address: z.string().min(5, 'Shop Address must be at least 5 characters long'),
+    shop_city: z.string().min(2, 'City is required'),
+    shop_province: z.string().min(2, 'Province is required'),
+    shop_country: z.string().min(2, 'Country is required'),
+    shop_postal_code: z.string().min(2, 'Postal Code is required'),
+    shop_phone_number: z.string().optional(),
+    shop_email: z.string().email('Invalid email address').optional().or(z.literal('')),
+});
+
 export type ProfileSchema = z.infer<typeof profileSchema>;
 export type AddressSchema = z.infer<typeof addressSchema>;
 export type PaymentMethodSchema = z.infer<typeof paymentMethodSchema>;
+export type ShopSchema = z.infer<typeof shopSchema>;

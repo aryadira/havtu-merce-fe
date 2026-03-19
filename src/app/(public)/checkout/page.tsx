@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/src/components/ui/badge';
 import { containerVariants, itemVariants } from '@/src/lib/constants/animations';
 import { formatPrice } from '@/src/lib/utils';
+import { json } from 'zod';
 
 export default function CheckoutPage() {
     return (
@@ -46,7 +47,9 @@ function CheckoutContent() {
 
     const { data: userData, isLoading: isLoadingUser } = useProfile();
     const { data: shippingMethods, isLoading: isLoadingShipping } = useShippingMethods();
-    const { data: product, isLoading: isLoadingProduct } = useProductShopDetail(productId as string);
+    const { data: product, isLoading: isLoadingProduct } = useProductShopDetail(
+        productId as string,
+    );
     const { data: userPaymentMethods, isLoading: isLoadingPayment } = useUserPaymentMethods();
 
     const user = userData;
@@ -56,6 +59,7 @@ function CheckoutContent() {
 
     const [quantity, setQuantity] = useState(1);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     const [selectedAddress, setSelectedAddress] = useState<any>(null);
     const [shippingMethodId, setShippingMethodId] = useState('');
@@ -77,8 +81,17 @@ function CheckoutContent() {
     const { mutate: checkout, isPending: isCheckingOut } = useCheckout({
         onSuccess: (data) => {
             toast.success('Pesanan berhasil dibuat!');
+            setIsRedirecting(true);
+
+            const order = Array.isArray(data) ? data[0] : data;
+            const orderId = order?.id;
+
             setTimeout(() => {
-                router.push(`/orders`);
+                if (orderId) {
+                    router.push(`/payments/${orderId}`);
+                } else {
+                    router.push(`/orders`);
+                }
             }, 500);
         },
         onError: (error: any) => {
@@ -186,9 +199,9 @@ function CheckoutContent() {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="min-h-screen pt-8 pb-32"
+            className="min-w-6xl min-h-screen pt-8 pb-32"
         >
-            <div className="max-w-6xl mx-auto px-4">
+            <div className="w-full min-w-6xl mx-auto px-4">
                 <motion.h1
                     variants={itemVariants}
                     className="text-2xl font-semibold mb-6 text-gray-800"
@@ -196,41 +209,44 @@ function CheckoutContent() {
                     Checkout
                 </motion.h1>
 
-                <div className="flex flex-col lg:flex-row gap-6 items-start relative">
+                <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6 items-start relative">
                     {/* Left Column */}
                     <motion.div
                         variants={itemVariants}
-                        className="w-full lg:w-2/3 flex flex-col gap-5"
+                        className="w-full lg:w-2/3 min-w-0 flex flex-col gap-5"
                     >
                         {/* Alamat Pengiriman */}
-                        <Card className="p-5 border border-gray-200">
+                        <Card className="p-5 border border-gray-200 overflow-hidden">
                             <h2 className="text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-4">
                                 Alamat Pengiriman
                             </h2>
-                            <div className="flex items-start justify-between">
-                                {selectedAddress ? (
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <MapPin className="w-4 h-4 text-emerald-500" />
-                                            <span className="font-semibold text-[15px]">
-                                                {selectedAddress.is_default ? 'Utama' : 'Rumah'}{' '}
-                                                <span className="text-gray-400 font-normal mx-1">
-                                                    •
-                                                </span>{' '}
-                                                {user?.profile?.fullname}
-                                            </span>
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 h-[72px] min-h-[72px] max-h-[72px] overflow-hidden">
+                                    {selectedAddress ? (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <MapPin className="w-4 h-4 text-emerald-500" />
+                                                <span className="font-semibold text-[15px] truncate">
+                                                    {selectedAddress.is_default ? 'Utama' : 'Rumah'}{' '}
+                                                    <span className="text-gray-400 font-normal mx-1">
+                                                        •
+                                                    </span>{' '}
+                                                    {user?.profile?.fullname}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-600 text-[15px] leading-relaxed line-clamp-2">
+                                                {selectedAddress.address}, {selectedAddress.city},{' '}
+                                                {selectedAddress.province},{' '}
+                                                {selectedAddress.country},{' '}
+                                                {user?.profile?.phone_number}
+                                            </p>
                                         </div>
-                                        <p className="text-gray-600 text-[15px] leading-relaxed max-w-xl">
-                                            {selectedAddress.address}, {selectedAddress.city},{' '}
-                                            {selectedAddress.province}, {selectedAddress.country},{' '}
-                                            {user?.profile?.phone_number}
+                                    ) : (
+                                        <p className="text-sm text-red-500">
+                                            Alamat belum diatur. Silakan tambah alamat di profil.
                                         </p>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-red-500">
-                                        Alamat belum diatur. Silakan tambah alamat di profil.
-                                    </p>
-                                )}
+                                    )}
+                                </div>
 
                                 <Dialog
                                     open={isAddressModalOpen}
@@ -240,7 +256,7 @@ function CheckoutContent() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="rounded-full text-xs font-semibold h-8 px-4 text-gray-600 border-gray-300"
+                                            className="text-xs font-semibold h-8 px-4 text-gray-600 border-gray-300"
                                         >
                                             {selectedAddress ? 'Ganti Alamat' : 'Atur Alamat'}
                                         </Button>
@@ -257,7 +273,7 @@ function CheckoutContent() {
                                                         setSelectedAddress(addr);
                                                         setIsAddressModalOpen(false);
                                                     }}
-                                                    className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all hover:border-emerald-500 hover:bg-emerald-50/30 ${
+                                                    className={`flex flex-col p-4 border cursor-pointer transition-all hover:border-emerald-500 hover:bg-emerald-50/30 ${
                                                         selectedAddress?.id === addr.id
                                                             ? 'border-emerald-500 bg-emerald-50/50'
                                                             : 'border-gray-200'
@@ -335,7 +351,9 @@ function CheckoutContent() {
                                     </div>
 
                                     <div className="flex flex-col items-end gap-3 shrink-0">
-                                        <p className="font-bold text-base">{formatPrice(price)}</p>
+                                        <p className="font-bold text-base">
+                                            {formatPrice(subtotal)}
+                                        </p>
                                         <div className="flex items-center border border-gray-300 py-1 px-2 h-8">
                                             <button
                                                 onClick={handleDecrease}
@@ -462,7 +480,7 @@ function CheckoutContent() {
                     {/* Right Column: Summaries & Payment */}
                     <motion.div
                         variants={itemVariants}
-                        className="w-full lg:w-1/3 flex flex-col gap-4 sticky top-24"
+                        className="w-full lg:w-1/3 shrink-0 flex flex-col gap-4 sticky top-24"
                     >
                         {/* Payment Methods */}
                         <Card className="p-5 border border-gray-200">
@@ -477,7 +495,7 @@ function CheckoutContent() {
                                 {paymentMethodsList.map((pm: any) => (
                                     <div
                                         key={pm.id}
-                                        className="flex justify-between items-center cursor-pointer p-3 border border-transparent hover:border-emerald-200 hover:bg-emerald-50/30 rounded-lg transition-all"
+                                        className="flex justify-between items-center cursor-pointer p-3 border border-transparent hover:border-emerald-200 hover:bg-emerald-50/30 transition-all"
                                         onClick={() => setUserPaymentMethodId(pm.id)}
                                     >
                                         <div className="flex items-center gap-3">
@@ -580,11 +598,19 @@ function CheckoutContent() {
 
                             <Button
                                 onClick={handleCheckout}
-                                disabled={isCheckingOut}
+                                disabled={isCheckingOut || isRedirecting}
                                 className="w-full text-[16px] h-12 bg-emerald-500 hover:bg-emerald-600 font-bold"
                             >
-                                {isCheckingOut ? (
-                                    'Sedang Memproses...'
+                                {isRedirecting ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Redirecting...
+                                    </div>
+                                ) : isCheckingOut ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Sedang Memproses...
+                                    </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
                                         <ShieldCheck className="w-5 h-5" /> Bayar Sekarang

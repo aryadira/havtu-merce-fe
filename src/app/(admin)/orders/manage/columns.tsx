@@ -8,17 +8,17 @@ export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse
     {
         accessorKey: 'order_number',
         header: 'Order #',
-        cell: ({ row }) => <div className="text-xs font-bold">{row.getValue('order_number')}</div>,
+        cell: ({ row }) => <div>{row.getValue('order_number')}</div>,
     },
     {
-        accessorKey: 'user_id',
-        header: 'User ID',
+        accessorKey: 'fullname',
+        header: 'Buyer',
         cell: ({ row }) => (
             <div
                 className="text-[10px] text-muted-foreground truncate max-w-[80px]"
-                title={row.getValue('user_id')}
+                title={row.getValue('fullname')}
             >
-                {row.getValue('user_id')}
+                {row.getValue('fullname')}
             </div>
         ),
     },
@@ -28,7 +28,7 @@ export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse
         cell: ({ row }) => {
             const amount = Number(row.getValue('order_total'));
             const formatted = formatPrice(amount);
-            return <div className="text-right font-bold text-emerald-600">{formatted}</div>;
+            return <div className="text-right">{formatted}</div>;
         },
     },
     {
@@ -53,16 +53,8 @@ export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse
             const slug = status?.slug || (statusId.includes('46b3e972') ? 'unpaid' : ''); // Fallback based on provided example ID if needed, but better to just show label if exists
 
             return (
-                <div
-                    className={`text-[10px] font-bold uppercase ${
-                        slug === 'paid'
-                            ? 'text-green-600'
-                            : slug === 'unpaid'
-                              ? 'text-red-500'
-                              : 'text-gray-500'
-                    }`}
-                >
-                    {status?.label || (slug === 'unpaid' ? 'UNPAID' : statusId.split('-')[0])}
+                <div>
+                    {status?.label || (slug === 'unpaid' ? 'Unpaid' : statusId.split('-')[0])}
                 </div>
             );
         },
@@ -93,7 +85,7 @@ export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse
         cell: ({ row }) => {
             const date = new Date(row.getValue('created_at'));
             return (
-                <div className="text-right text-xs">
+                <div className="text-right">
                     {date.toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'short',

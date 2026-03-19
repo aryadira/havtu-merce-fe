@@ -19,6 +19,7 @@ import { Input } from '@/src/components/ui/input';
 
 import { useRegister } from '@/src/lib/hooks/auth';
 import { registerSchema, type RegisterSchema } from './schema';
+import Link from 'next/link';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -150,6 +151,12 @@ export default function RegisterPage() {
                                 </FormItem>
                             )}
                         />
+                        <div>
+                            Sudah punya akun?{' '}
+                            <span className="hover:underline text-primary">
+                                <Link href="/login">Login</Link>
+                            </span>
+                        </div>
                         <Button type="submit" className="cursor-pointer" disabled={isPending}>
                             {isPending ? 'Creating Account...' : 'Register'}
                         </Button>

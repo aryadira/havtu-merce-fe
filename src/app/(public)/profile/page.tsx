@@ -11,6 +11,7 @@ import {
     Shield as ShieldIcon,
     Calendar as CalendarIcon,
     CreditCardIcon,
+    Store as StoreIcon,
 } from 'lucide-react';
 
 import { PageLoader } from '@/src/components/ui/page-loader';
@@ -52,11 +53,14 @@ import {
     type AddressSchema,
     paymentMethodSchema,
     type PaymentMethodSchema,
+    shopSchema,
+    type ShopSchema,
 } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
 import { useUpdateUser, useProfile, useCreateAddress } from '@/src/lib/hooks/user/user';
+import { useOpenShop } from '@/src/lib/hooks/shop/shop';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -72,7 +76,7 @@ import {
     useUserPaymentMethods,
 } from '@/src/lib/hooks/user/user-payment-method';
 import { useBanks } from '@/src/lib/hooks/bank/bank';
-import { usePaymentTypes } from '@/src/lib/hooks/payment-type/payment-type';
+import { usePaymentTypes } from '@/src/lib/hooks/payment/payment-type';
 import { getInitials, formatDate } from '@/src/lib/utils';
 import { containerVariants, itemVariants } from '@/src/lib/constants/animations';
 
@@ -89,10 +93,6 @@ function ProfilePageContent() {
     const { data: user, isLoading: loadProfile } = useProfile();
     const { data: paymentTypes } = usePaymentTypes();
     const { data: paymentMethods } = useUserPaymentMethods();
-
-    const profile = user.profile || {};
-    const addresses = (profile as any).addresses || [];
-    const createdAt = (user as any).createdAt;
 
     const { mutate: updateUser, isPending } = useUpdateUser();
 
@@ -161,6 +161,35 @@ function ProfilePageContent() {
         },
     });
 
+    // Shop Form
+    const [isAddShopOpen, setIsAddShopOpen] = useState(false);
+    const shopForm = useForm<ShopSchema>({
+        resolver: zodResolver(shopSchema),
+        defaultValues: {
+            shop_type: 'personal',
+            shop_name: '',
+            shop_description: '',
+            shop_address: '',
+            shop_city: '',
+            shop_province: '',
+            shop_country: 'Indonesia',
+            shop_postal_code: '',
+            shop_phone_number: '',
+            shop_email: '',
+        },
+    });
+
+    const { mutate: openShop, isPending: isOpeningShop } = useOpenShop({
+        onSuccess: () => {
+            toast.success('Your shop has been successfully opened! Re-login to apply changes.');
+            setIsAddShopOpen(false);
+            shopForm.reset();
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Failed to open a shop');
+        },
+    });
+
     const handleUpdateProfile = async () => {
         if (!user) return;
         try {
@@ -181,6 +210,9 @@ function ProfilePageContent() {
         createPaymentMethod(data);
     };
 
+    const handleOpenShop = (data: ShopSchema) => {
+        openShop(data);
+    };
 
     useEffect(() => {
         if (user) {
@@ -224,6 +256,10 @@ function ProfilePageContent() {
             </div>
         );
     }
+
+    const profile = user.profile || {};
+    const addresses = (profile as any).addresses || [];
+    const createdAt = (user as any).createdAt;
 
     return (
         <motion.div
@@ -348,6 +384,13 @@ function ProfilePageContent() {
                                 Payment Method
                             </TabsTrigger>
                             <TabsTrigger
+                                value="store"
+                                className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
+                            >
+                                <StoreIcon className="w-4 h-4 mr-2" />
+                                Store Setup
+                            </TabsTrigger>
+                            <TabsTrigger
                                 value="security"
                                 className="justify-start cursor-pointer px-4 py-2.5 h-auto text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-primary transition-all ease-in-out border border-transparent data-[state=active]:border-border"
                             >
@@ -397,7 +440,9 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="text"
                                                                             placeholder="Ubah nama lengkap"
-                                                                            disabled={!isProfileEditing}
+                                                                            disabled={
+                                                                                !isProfileEditing
+                                                                            }
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -418,7 +463,9 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="text"
                                                                             placeholder="Ubah username"
-                                                                            disabled={!isProfileEditing}
+                                                                            disabled={
+                                                                                !isProfileEditing
+                                                                            }
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -441,7 +488,9 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="email"
                                                                             placeholder="Ubah email"
-                                                                            disabled={!isProfileEditing}
+                                                                            disabled={
+                                                                                !isProfileEditing
+                                                                            }
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -464,7 +513,9 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="tel"
                                                                             placeholder="Ubah nomor telepon"
-                                                                            disabled={!isProfileEditing}
+                                                                            disabled={
+                                                                                !isProfileEditing
+                                                                            }
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -485,7 +536,9 @@ function ProfilePageContent() {
                                                                             {...field}
                                                                             type="date"
                                                                             placeholder="Ubah tanggal lahir"
-                                                                            disabled={!isProfileEditing}
+                                                                            disabled={
+                                                                                !isProfileEditing
+                                                                            }
                                                                             className="transition-all duration-300"
                                                                         />
                                                                     </FormControl>
@@ -1141,6 +1194,147 @@ function ProfilePageContent() {
                                                 Update
                                             </Button>
                                         </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </TabsContent>
+
+                        <TabsContent value="store" className="mt-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                            >
+                                <Card className="border-border/60">
+                                    <CardHeader>
+                                        <CardTitle>Seller Dashboard</CardTitle>
+                                        <CardDescription>
+                                            {user.role_slug === 'seller'
+                                                ? 'You are already a seller. Go to the dashboard.'
+                                                : 'Become a seller and open your own store today.'}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {user.role_slug === 'buyer' || user.role_slug === 'user' ? (
+                                            <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-border rounded-lg bg-muted/10">
+                                                <StoreIcon className="w-12 h-12 mb-4 text-emerald-500 opacity-60" />
+                                                <h3 className="font-semibold text-lg mb-2">Want to sell your products?</h3>
+                                                <p className="text-sm text-muted-foreground max-w-sm mb-6">
+                                                    Open a shop now to start selling and reaching millions of customers.
+                                                </p>
+                                                
+                                                <Dialog open={isAddShopOpen} onOpenChange={setIsAddShopOpen}>
+                                                    <DialogTrigger asChild>
+                                                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                                                            Open a Shop Now
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="sm:max-w-[700px] h-[90vh] sm:h-[80vh] overflow-y-auto">
+                                                        <DialogHeader>
+                                                            <DialogTitle>Mulai Buka Tokomu</DialogTitle>
+                                                        </DialogHeader>
+                                                        <Form {...shopForm}>
+                                                            <form onSubmit={shopForm.handleSubmit(handleOpenShop)} className="space-y-4 py-4">
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <FormField control={shopForm.control} name="shop_name" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Shop Name</FormLabel>
+                                                                            <FormControl><Input {...field} placeholder="Name" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                    <FormField control={shopForm.control} name="shop_type" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Shop Type</FormLabel>
+                                                                            <FormControl><Input {...field} placeholder="e.g. personal, business" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                </div>
+                                                                <FormField control={shopForm.control} name="shop_description" render={({field}) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>Description</FormLabel>
+                                                                        <FormControl><Textarea {...field} placeholder="Tell us about your shop" /></FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )} />
+                                                                <FormField control={shopForm.control} name="shop_address" render={({field}) => (
+                                                                    <FormItem>
+                                                                        <FormLabel>Address</FormLabel>
+                                                                        <FormControl><Textarea {...field} placeholder="Shop full address" /></FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )} />
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <FormField control={shopForm.control} name="shop_city" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>City</FormLabel>
+                                                                            <FormControl><Input {...field} placeholder="City" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                    <FormField control={shopForm.control} name="shop_province" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Province</FormLabel>
+                                                                            <FormControl><Input {...field} placeholder="Province" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <FormField control={shopForm.control} name="shop_postal_code" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Postal Code</FormLabel>
+                                                                            <FormControl><Input {...field} placeholder="Postal Code" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                    <FormField control={shopForm.control} name="shop_country" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Country</FormLabel>
+                                                                            <FormControl><Input {...field} placeholder="Country" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <FormField control={shopForm.control} name="shop_email" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Email (Optional)</FormLabel>
+                                                                            <FormControl><Input {...field} type="email" placeholder="Email" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                    <FormField control={shopForm.control} name="shop_phone_number" render={({field}) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>Phone (Optional)</FormLabel>
+                                                                            <FormControl><Input {...field} type="tel" placeholder="Phone" /></FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )} />
+                                                                </div>
+                                                                <DialogFooter className="mt-6 pt-4 border-t">
+                                                                    <Button type="submit" disabled={isOpeningShop} className="bg-emerald-500 hover:bg-emerald-600">
+                                                                        {isOpeningShop ? 'Submitting...' : 'Open Shop'}
+                                                                    </Button>
+                                                                </DialogFooter>
+                                                            </form>
+                                                        </Form>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-border rounded-lg bg-emerald-50/50">
+                                                <StoreIcon className="w-12 h-12 mb-4 text-emerald-500" />
+                                                <h3 className="font-semibold text-lg text-emerald-900 mb-2">You are a seller!</h3>
+                                                <p className="text-sm text-emerald-700 max-w-sm mb-6">
+                                                    Manage your products, orders, and shop settings from your seller dashboard.
+                                                </p>
+                                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={() => window.location.href = '/dashboard'}>
+                                                    Go to Seller Dashboard
+                                                </Button>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </motion.div>

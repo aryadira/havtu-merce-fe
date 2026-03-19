@@ -114,7 +114,7 @@ function ProductDetailContent() {
         // Simpan kuantitas ke sessionStorage agar tidak muncul di query string
         sessionStorage.setItem('checkout_qty', quantity.toString());
 
-        router.push(`/checkout?pid=${product.id}&itemId=${selectedItem.id}`);
+        router.push(`/checkout?product_id=${product.id}&item_id=${selectedItem.id}`);
     };
 
 

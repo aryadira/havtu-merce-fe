@@ -54,7 +54,7 @@ export function AppHeader() {
                         className="flex items-center gap-2 font-semibold text-foreground hover:text-primary transition-colors"
                     >
                         <Package className="h-5 w-5" />
-                        <span className="text-sm tracking-tight">MINSHOP</span>
+                        <span className="text-sm tracking-tight">Havtu Merce</span>
                     </Link>
                 </div>
 

@@ -49,6 +49,7 @@ import { Skeleton } from '@/src/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useManageOrders } from '@/src/lib/hooks/order';
+import { useMe } from '@/src/lib/hooks/auth';
 import { OrderResponse } from '@/src/types/order';
 import { formatPrice } from '@/src/lib/utils';
 import { PageLoader } from '@/src/components/ui/page-loader';
@@ -71,9 +72,10 @@ export default function OrderList() {
 function OrderListContent() {
     const { page, limit, next, prev } = usePagination();
     const { data: orders, isLoading: loadOrders } = useManageOrders({ page, limit });
+    const { data: user, isLoading: loadUser } = useMe();
 
     const ordersData = orders?.data ?? [];
-    const meta = orders?.meta ?? { totalItems: 0, itemCount: 0 };
+    const meta = orders?.meta;
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -101,6 +103,17 @@ function OrderListContent() {
 
     return (
         <div className="w-full">
+            <h1 className="mb-3 flex items-center gap-2">
+                Hello,{' '}
+                {loadUser ? (
+                    <div className="h-6 w-28">
+                        <Skeleton className="w-full h-full" />
+                    </div>
+                ) : (
+                    user?.profile.fullname
+                )}
+            </h1>
+
             <h1 className="text-2xl">Manage Orders</h1>
             <div className="flex items-center py-4 gap-2">
                 <Input
@@ -200,15 +213,16 @@ function OrderListContent() {
                 </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="text-muted-foreground flex-1 text-sm">
-                    {page} of {meta.itemCount} / {meta.totalItems} row(s) selected.
+                <div className="text-muted-foreground flex-1">
+                    Page {meta?.currentPage} of {meta?.totalPages} — showing {meta?.itemCount} items
+                    out of {meta?.totalItems}.
                 </div>
                 <div className="space-x-2">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => prev(meta)}
-                        disabled={page <= 1}
+                        disabled={!meta?.hasPreviousPage}
                     >
                         Previous
                     </Button>
@@ -216,7 +230,7 @@ function OrderListContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => next(meta)}
-                        disabled={meta.itemCount < limit}
+                        disabled={!meta?.hasNextPage}
                     >
                         Next
                     </Button>

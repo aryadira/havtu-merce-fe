@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { paymentType } from '../../api/payment-type/payment-type';
+import { paymentType } from '../../api/payment/payment-type';
 
 const paymentTypeKeys = {
     key: ['payment-type'] as const,

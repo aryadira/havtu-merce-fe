@@ -22,15 +22,14 @@ import { Badge } from '@/src/components/ui/badge';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, ShoppingBag } from 'lucide-react';
 import { Skeleton } from '@/src/components/ui/skeleton';
-import { formatPrice } from '@/src/lib/utils';
+import { formatDate, formatPrice } from '@/src/lib/utils';
+import Link from 'next/link';
 
 export default function OrderDetailPage() {
     const { id } = useParams();
     const router = useRouter();
 
     const { data: order, isLoading, isError } = userOrder(id as string);
-
-    console.log(order);
 
     if (isLoading) {
         return (
@@ -67,17 +66,6 @@ export default function OrderDetailPage() {
             </div>
         );
     }
-
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
 
     return (
         <div className="container py-8 max-w-4xl mx-auto slide-up">
@@ -201,9 +189,11 @@ export default function OrderDetailPage() {
                     </CardContent>
                     <CardFooter className="bg-gray-50 p-6 flex justify-end rounded-b-lg">
                         {order.payment_status?.slug === 'unpaid' && (
-                            <Button size="lg" className="w-full md:w-auto">
-                                Pay Now
-                            </Button>
+                            <Link href={`/payments/${order.id}`}>
+                                <Button size="lg" className="w-full md:w-auto">
+                                    Pay Now
+                                </Button>
+                            </Link>
                         )}
                         {order.payment_status?.slug === 'paid' && (
                             <div className="flex items-center text-green-600 font-medium">
