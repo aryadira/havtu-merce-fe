@@ -39,4 +39,18 @@ export const auth = {
         const response = await api.get<CurrentUserResponse>(`${this.AUTH_URL}/me`);
         return response.data;
     },
+    
+    async switchToSeller() {
+        const res = await api.post(`${this.AUTH_URL}/switch-to-seller`);
+        const { token, refreshToken } = res.data;
+        useAuthStore.getState().setTokens(token, refreshToken);
+        return res.data;
+    },
+
+    async switchToBuyer() {
+        const res = await api.post(`${this.AUTH_URL}/switch-to-buyer`);
+        const { token, refreshToken } = res.data;
+        useAuthStore.getState().setTokens(token, refreshToken);
+        return res.data;
+    },
 };

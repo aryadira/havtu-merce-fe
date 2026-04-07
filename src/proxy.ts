@@ -38,11 +38,11 @@ export async function proxy(req: NextRequest) {
 
     // Decode token (safely)
     const decoded: any = jwt.decode(token);
-    const role = decoded?.role;
+    const roles: string[] = decoded?.roles || [];
     const allowedPaths: string[] = decoded?.allowedPaths || [];
 
     // If decode fails → force login
-    if (!role) {
+    if (!roles || roles.length === 0) {
         return NextResponse.redirect(loginUrl);
     }
 
@@ -78,7 +78,7 @@ export async function proxy(req: NextRequest) {
 
     if (!hasAccess) {
         // [DEBUG LOG] Sangat berguna jika akses ditolak terus
-        console.log(`[Proxy] !! ACCESS DENIED !! Path: ${pathname} | Role: ${role} | Allowed: ${JSON.stringify(allowedPaths)}`);
+        console.log(`[Proxy] !! ACCESS DENIED !! Path: ${pathname} | Roles: ${JSON.stringify(roles)} | Allowed: ${JSON.stringify(allowedPaths)}`);
         return NextResponse.rewrite(unauthorizedUrl);
     }
 

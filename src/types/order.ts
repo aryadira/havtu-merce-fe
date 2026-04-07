@@ -45,6 +45,18 @@ export interface PaymentStatus {
     description: string;
 }
 
+export interface Transaction {
+    id: string;
+    transaction_number: string;
+    amount: string;
+    status: string;
+    evidence_url?: string;
+    paid_at?: string;
+    verified_at?: string;
+    verified_by?: string;
+    verification_note?: string;
+}
+
 export interface OrderResponse {
     id: string;
     user_id: string;
@@ -58,6 +70,15 @@ export interface OrderResponse {
     order_lines?: OrderItemResponse[];
     order_status?: OrderStatus;
     payment_status?: PaymentStatus;
+    transaction?: Transaction;
+    user_payment_method?: {
+        id: string;
+        payment_type: {
+            id: string;
+            slug: string;
+            value: string;
+        };
+    };
     created_at: string;
     updated_at: string;
 }

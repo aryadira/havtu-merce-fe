@@ -14,6 +14,9 @@ export const useMe = () => {
     return useQuery({
         queryKey: authKeys.user(),
         queryFn: () => auth.me(),
+        // Cache data di memory secara "fresh" selama 5 menit.
+        // Menghindari boros request (multiple components/pages di-share 1 fetch yang sama).
+        staleTime: 5 * 60 * 1000,
     });
 };
 
@@ -25,7 +28,8 @@ export const useLogin = (options?: {
     return useMutation({
         mutationFn: (data: LoginSchema) => auth.login(data),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: authKeys.user() });
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
             options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),
@@ -40,7 +44,8 @@ export const useRegister = (options?: {
     return useMutation({
         mutationFn: (data: RegisterSchema) => auth.register(data),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: authKeys.user() });
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
             options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),
@@ -56,6 +61,38 @@ export const useLogout = (options?: { onSuccess?: () => void; onError?: (error: 
             await queryClient.invalidateQueries({ queryKey: authKeys.user() });
             router.push('/login');
             options?.onSuccess?.();
+        },
+        onError: (error) => options?.onError?.(error),
+    });
+};
+
+export const useSwitchToSeller = (options?: {
+    onSuccess?: (data: any) => void;
+    onError?: (error: any) => void;
+}) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: () => auth.switchToSeller(),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+            options?.onSuccess?.(data);
+        },
+        onError: (error) => options?.onError?.(error),
+    });
+};
+
+export const useSwitchToBuyer = (options?: {
+    onSuccess?: (data: any) => void;
+    onError?: (error: any) => void;
+}) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: () => auth.switchToBuyer(),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+            options?.onSuccess?.(data);
         },
         onError: (error) => options?.onError?.(error),
     });

@@ -10,7 +10,8 @@ export const useOpenShop = (options?: {
     return useMutation({
         mutationFn: (data: CreateShopDto) => shop.openShop(data),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['me'] });
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
             if (options?.onSuccess) {
                 options.onSuccess(data);
             }

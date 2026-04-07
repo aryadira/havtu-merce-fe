@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { formatPrice } from '@/src/lib/utils';
 import { containerVariants, itemVariants } from '@/src/lib/constants/animations';
 import { usePay } from '@/src/lib/hooks/payment';
+import { EvidenceUpload } from '@/src/components/payment/evidence-upload';
 
 const PAYMENT_DURATION_SECONDS = 60 * 60; // 1 hour
 
@@ -130,6 +131,8 @@ function PaymentPageContent() {
     if (isLoading) {
         return <PageLoader message="Memuat detail pesanan..." spinnerColor="text-emerald-500" />;
     }
+
+    const isManual = order?.user_payment_method?.payment_type?.slug === 'bank_transfer';
 
     return (
         <motion.div
@@ -270,11 +273,29 @@ function PaymentPageContent() {
                     </Card>
                 </motion.div>
 
+                {/* Evidence Upload for Manual Payment */}
+                <motion.div variants={itemVariants}>
+                    {order && order.payment_status?.slug === 'unpaid' && isManual && (
+                        <EvidenceUpload orderId={orderId} />
+                    )}
+                    {order && order.payment_status?.slug === 'waiting_verification' && (
+                        <Card className="p-5 mb-5 border border-blue-100 bg-blue-50/30">
+                            <div className="flex items-center gap-3 text-blue-700">
+                                <Clock className="w-5 h-5" />
+                                <div>
+                                    <p className="font-bold">Bukti Sedang Diverifikasi</p>
+                                    <p className="text-sm">Mohon tunggu, penjual sedang memeriksa bukti pembayaran Anda.</p>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+                </motion.div>
+
                 {/* Payment Instructions */}
                 <motion.div variants={itemVariants}>
                     <Card className="p-5 mb-5 border border-gray-200">
                         <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-4">
-                            Cara Pembayaran
+                            Cara Pembayaran (Manual)
                         </h2>
 
                         <div className="flex flex-col gap-3">
@@ -321,27 +342,37 @@ function PaymentPageContent() {
 
                 {/* Actions */}
                 <motion.div variants={itemVariants} className="flex flex-col gap-3">
-                    <Button
-                        onClick={handlePayNow}
-                        disabled={isExpired || isPaying || isRedirecting}
-                        className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-[15px] font-bold"
-                    >
-                        {isRedirecting ? (
-                            <div className="flex items-center gap-2">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Redirecting...
+                    {isManual ? (
+                        order?.payment_status?.slug === 'unpaid' && (
+                            <div className="text-center py-4 bg-amber-50 border border-amber-100 rounded-xl mb-4">
+                                <p className="text-sm text-amber-700 font-medium px-4">
+                                    Silakan lakukan transfer ke rekening kami, kemudian upload bukti pembayaran pada panel di atas untuk konfirmasi.
+                                </p>
                             </div>
-                        ) : isPaying ? (
-                            <div className="flex items-center gap-2">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Process Payment...
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                Bayar Sekarang <ChevronRight className="w-4 h-4" />
-                            </div>
-                        )}
-                    </Button>
+                        )
+                    ) : (
+                        <Button
+                            onClick={handlePayNow}
+                            disabled={isExpired || isPaying || isRedirecting}
+                            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-[15px] font-bold"
+                        >
+                            {isRedirecting ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Redirecting...
+                                </div>
+                            ) : isPaying ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Process Payment...
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    Bayar Sekarang <ChevronRight className="w-4 h-4" />
+                                </div>
+                            )}
+                        </Button>
+                    )}
 
                     <Button
                         variant="outline"

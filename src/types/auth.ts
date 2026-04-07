@@ -1,9 +1,10 @@
-import { UserGender } from "../app/(public)/profile/schema";
+import { UserGender } from '../app/(public)/profile/schema';
 
 export interface CurrentUserResponse {
     id: string;
-    user_role_id: string;
-    role_slug: string;
+    user_has_roles?: any[];
+    roles?: string[];
+    role_slug?: string;
     username: string;
     email: string;
     profile: {
@@ -11,5 +12,8 @@ export interface CurrentUserResponse {
         user_id: string;
         fullname: string;
         avatar: string;
+    };
+    shop?: {
+        id: string;
     };
 }

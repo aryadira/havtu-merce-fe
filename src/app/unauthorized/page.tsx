@@ -9,18 +9,17 @@ export default async function UnauthorizedPage() {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
 
-    let role = 'buyer';
+    let isSidebarLayout = false;
 
     if (token) {
         try {
             const decoded: any = jwt.decode(token);
-            role = decoded?.role || 'buyer';
+            const roles: string[] = decoded?.roles || [];
+            isSidebarLayout = roles.includes('administrator') || roles.includes('seller');
         } catch (e) {
             console.error('Failed to decode token in unauthorized page', e);
         }
     }
-
-    const isSidebarLayout = role === 'administrator' || role === 'seller';
 
     if (isSidebarLayout) {
         return (

@@ -20,7 +20,7 @@ import {
 import { userOrder } from '@/src/lib/hooks/order';
 import { Badge } from '@/src/components/ui/badge';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShoppingBag, Clock } from 'lucide-react';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { formatDate, formatPrice } from '@/src/lib/utils';
 import Link from 'next/link';
@@ -187,11 +187,17 @@ export default function OrderDetailPage() {
                             <span>{formatPrice(Number(order.order_total))}</span>
                         </div>
                     </CardContent>
-                    <CardFooter className="bg-gray-50 p-6 flex justify-end rounded-b-lg">
+                    <CardFooter className="bg-gray-50 p-6 flex flex-col items-center md:items-end rounded-b-lg gap-4">
+                        {order.transaction?.evidence_url && order.payment_status?.slug === 'waiting_verification' && (
+                            <div className="w-full bg-blue-50 border border-blue-100 p-3 rounded-lg flex items-center gap-3 text-blue-700 text-sm">
+                                <Clock className="w-4 h-4 shrink-0" />
+                                <span>Bukti pembayaran sudah diupload dan sedang diverifikasi.</span>
+                            </div>
+                        )}
                         {order.payment_status?.slug === 'unpaid' && (
-                            <Link href={`/payments/${order.id}`}>
-                                <Button size="lg" className="w-full md:w-auto">
-                                    Pay Now
+                            <Link href={`/payments/${order.id}`} className="w-full md:w-auto">
+                                <Button size="lg" className="w-full">
+                                    Pay Now / Upload Evidence
                                 </Button>
                             </Link>
                         )}

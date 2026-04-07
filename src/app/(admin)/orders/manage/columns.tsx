@@ -49,12 +49,19 @@ export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse
         header: 'Payment',
         cell: ({ row }) => {
             const status = row.original.payment_status;
-            const statusId = row.original.payment_status_id;
-            const slug = status?.slug || (statusId.includes('46b3e972') ? 'unpaid' : ''); // Fallback based on provided example ID if needed, but better to just show label if exists
+            const slug = status?.slug;
+
+            if (slug === 'waiting_verification') {
+                return (
+                    <div className="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold inline-block">
+                        NEEDS VERIFICATION
+                    </div>
+                );
+            }
 
             return (
-                <div>
-                    {status?.label || (slug === 'unpaid' ? 'Unpaid' : statusId.split('-')[0])}
+                <div className="text-[11px] font-medium text-gray-700">
+                    {status?.label || 'Unpaid'}
                 </div>
             );
         },
@@ -101,6 +108,6 @@ export const getOrderColumns = (pagination: Pagination): ColumnDef<OrderResponse
         id: 'actions',
         header: 'Actions',
         enableHiding: false,
-        cell: ({ row }) => <OrderActions orderId={row.original.id} />,
+        cell: ({ row }) => <OrderActions order={row.original} />,
     },
 ];

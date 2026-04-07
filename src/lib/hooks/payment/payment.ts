@@ -21,3 +21,40 @@ export const usePay = (options?: {
         onError: (error) => options?.onError?.(error),
     });
 };
+
+export const useUploadEvidence = (options?: {
+    onSuccess?: (data: any) => void;
+    onError?: (data: any) => void;
+}) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ orderId, file }: { orderId: string; file: File }) =>
+            payment.uploadEvidence(orderId, file),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: orderKeys.details(data.order_id) });
+            options?.onSuccess?.(data);
+        },
+        onError: (error) => options?.onError?.(error),
+    });
+};
+
+export const useVerifyEvidence = (options?: {
+    onSuccess?: (data: any) => void;
+    onError?: (data: any) => void;
+}) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            orderId,
+            data,
+        }: {
+            orderId: string;
+            data: { action: string; verification_note?: string };
+        }) => payment.verifyEvidence(orderId, data),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: orderKeys.details(data.order_id) });
+            options?.onSuccess?.(data);
+        },
+        onError: (error) => options?.onError?.(error),
+    });
+};

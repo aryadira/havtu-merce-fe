@@ -13,8 +13,8 @@ import {
 } from '@/src/components/ui/sidebar';
 import { SIDEBAR_NAVIGATIONS } from '../lib/constants/sidebar-navigation';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
-import { useLogout, useMe } from '../lib/hooks/auth';
+import { useLogout, useMe, useSwitchToBuyer } from '../lib/hooks/auth';
+import { ArrowLeft, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/src/lib/utils';
 import { Skeleton } from './ui/skeleton';
@@ -33,14 +33,28 @@ export function AppSidebar() {
         },
     });
 
+    const { mutate: switchToBuyer, isPending: isSwitchingToBuyer } = useSwitchToBuyer({
+        onSuccess: () => {
+            toast.success('Kembali ke mode Buyer!');
+            router.push('/products/shop');
+        },
+        onError: (err: any) => {
+            toast.error('Gagal berpindah mode.');
+        },
+    });
+
     const handleLogout = (e: React.MouseEvent) => {
         e.preventDefault();
         logout(undefined);
     };
 
+    const isPendingAction = isPending || isSwitchingToBuyer;
+
+    const userRoleSlugs = (user?.user_has_roles || user?.roles || []).map((r: any) => typeof r === 'string' ? r : r.role_slug);
+
     const filteredNavigations = SIDEBAR_NAVIGATIONS.filter((item) => {
         if (!item.roles) return true;
-        return user?.role_slug && item.roles.includes(user.role_slug);
+        return userRoleSlugs.some((r: string) => item.roles!.includes(r));
     });
 
     return (
@@ -81,11 +95,27 @@ export function AppSidebar() {
                         </SidebarMenu>
 
                         <SidebarMenu className="mt-4 border-t pt-2">
+                            {userRoleSlugs.includes('seller') && (
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <button
+                                            onClick={() => switchToBuyer()}
+                                            disabled={isPendingAction}
+                                            className="cursor-pointer flex w-full items-center gap-2 text-emerald-600 hover:text-emerald-700 transition"
+                                        >
+                                            <ArrowLeft className="w-4 h-4" />
+                                            <span>
+                                                {isSwitchingToBuyer ? 'Switching...' : 'Back to Buyer'}
+                                            </span>
+                                        </button>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            )}
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <button
                                         onClick={handleLogout}
-                                        disabled={isPending}
+                                        disabled={isPendingAction}
                                         className="cursor-pointer flex w-full items-center gap-2 text-red-600 hover:text-red-700 transition"
                                     >
                                         <LogOut className="w-4 h-4" />

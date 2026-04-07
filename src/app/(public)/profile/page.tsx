@@ -61,6 +61,8 @@ import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
 import { useUpdateUser, useProfile, useCreateAddress } from '@/src/lib/hooks/user/user';
 import { useOpenShop } from '@/src/lib/hooks/shop/shop';
+import { useSwitchToSeller } from '@/src/lib/hooks/auth';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -92,9 +94,17 @@ function ProfilePageContent() {
     const { data: banks } = useBanks();
     const { data: user, isLoading: loadProfile } = useProfile();
     const { data: paymentTypes } = usePaymentTypes();
-    const { data: paymentMethods } = useUserPaymentMethods();
+    const { data: paymentMethods = [] } = useUserPaymentMethods();
+    const router = useRouter();
 
     const { mutate: updateUser, isPending } = useUpdateUser();
+
+    const { mutate: switchToSeller, isPending: isSwitchingToSeller } = useSwitchToSeller({
+        onSuccess: () => {
+            toast.success('Mode Seller diaktifkan!');
+            router.push('/products/manage');
+        },
+    });
 
     // Profile Form
     const [isProfileEditing, setProfileIsEditing] = useState(false);
@@ -313,46 +323,6 @@ function ProfilePageContent() {
                                 </span>
                             </div>
                         </div>
-
-                        <div className="flex gap-2 mt-4 md:mt-0 relative min-w-[120px] justify-end">
-                            <AnimatePresence mode="wait">
-                                {!isProfileEditing ? (
-                                    <motion.div
-                                        key="edit-btn"
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <Button
-                                            onClick={() => setProfileIsEditing(true)}
-                                            variant="outline"
-                                        >
-                                            Edit Profile
-                                        </Button>
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="actions-btn"
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.2 }}
-                                        className="flex gap-2"
-                                    >
-                                        <Button
-                                            onClick={() => setProfileIsEditing(false)}
-                                            variant="outline"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button onClick={handleUpdateProfile} disabled={isPending}>
-                                            {isPending ? 'Saving...' : 'Save'}
-                                        </Button>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
                     </div>
                 </div>
             </motion.div>
@@ -409,12 +379,63 @@ function ProfilePageContent() {
                                 className="space-y-6"
                             >
                                 <Card className="border-border/60 overflow-hidden">
-                                    <CardHeader>
-                                        <CardTitle>Personal Information</CardTitle>
-                                        <CardDescription>
-                                            Manage your personal details and public profile info.
-                                        </CardDescription>
+                                    <CardHeader className="w-full flex items-center justify-between">
+                                        <div className='flex flex-col gap-2'>
+                                            <CardTitle>Personal Information</CardTitle>
+                                            <CardDescription>
+                                                Manage your personal details and public profile
+                                                info.
+                                            </CardDescription>
+                                        </div>
+
+                                        <div className="flex gap-2 mt-4 md:mt-0 relative min-w-[120px] justify-end">
+                                            <AnimatePresence mode="wait">
+                                                {!isProfileEditing ? (
+                                                    <motion.div
+                                                        key="edit-btn"
+                                                        initial={{ opacity: 0, scale: 0.9 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.9 }}
+                                                        transition={{ duration: 0.2 }}
+                                                    >
+                                                        <Button
+                                                            onClick={() =>
+                                                                setProfileIsEditing(true)
+                                                            }
+                                                            variant="outline"
+                                                        >
+                                                            Edit Profile
+                                                        </Button>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key="actions-btn"
+                                                        initial={{ opacity: 0, scale: 0.9 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.9 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        className="flex gap-2"
+                                                    >
+                                                        <Button
+                                                            onClick={() =>
+                                                                setProfileIsEditing(false)
+                                                            }
+                                                            variant="outline"
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                        <Button
+                                                            onClick={handleUpdateProfile}
+                                                            disabled={isPending}
+                                                        >
+                                                            {isPending ? 'Saving...' : 'Save'}
+                                                        </Button>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
                                     </CardHeader>
+
                                     <Form {...profileForm}>
                                         <form>
                                             <CardContent className="space-y-6">
@@ -547,7 +568,7 @@ function ProfilePageContent() {
                                                             )}
                                                         />
                                                     </div>
-                                                    <div className="space-y-2">
+                                                    <div className="w-full space-y-2">
                                                         <FormField
                                                             control={profileForm.control}
                                                             name="gender"
@@ -567,7 +588,7 @@ function ProfilePageContent() {
                                                                         }
                                                                     >
                                                                         <FormControl>
-                                                                            <SelectTrigger className="transition-all duration-300">
+                                                                            <SelectTrigger className="w-full cursor-pointer transition-all duration-300">
                                                                                 <SelectValue placeholder="Select gender" />
                                                                             </SelectTrigger>
                                                                         </FormControl>
@@ -826,7 +847,7 @@ function ProfilePageContent() {
                                         </Dialog>
                                     </CardHeader>
                                     <CardContent>
-                                        {addresses.length === 0 ? (
+                                        {(addresses?.length || 0) === 0 ? (
                                             <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-muted/20  border border-dashed border-border">
                                                 <MapPinIcon className="w-10 h-10 mb-3 opacity-20" />
                                                 <p className="text-sm font-medium">
@@ -1215,15 +1236,21 @@ function ProfilePageContent() {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        {user.role_slug === 'buyer' || user.role_slug === 'user' ? (
+                                        {!user.shop ? (
                                             <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-border rounded-lg bg-muted/10">
                                                 <StoreIcon className="w-12 h-12 mb-4 text-emerald-500 opacity-60" />
-                                                <h3 className="font-semibold text-lg mb-2">Want to sell your products?</h3>
+                                                <h3 className="font-semibold text-lg mb-2">
+                                                    Want to sell your products?
+                                                </h3>
                                                 <p className="text-sm text-muted-foreground max-w-sm mb-6">
-                                                    Open a shop now to start selling and reaching millions of customers.
+                                                    Open a shop now to start selling and reaching
+                                                    millions of customers.
                                                 </p>
-                                                
-                                                <Dialog open={isAddShopOpen} onOpenChange={setIsAddShopOpen}>
+
+                                                <Dialog
+                                                    open={isAddShopOpen}
+                                                    onOpenChange={setIsAddShopOpen}
+                                                >
                                                     <DialogTrigger asChild>
                                                         <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
                                                             Open a Shop Now
@@ -1231,91 +1258,218 @@ function ProfilePageContent() {
                                                     </DialogTrigger>
                                                     <DialogContent className="sm:max-w-[700px] h-[90vh] sm:h-[80vh] overflow-y-auto">
                                                         <DialogHeader>
-                                                            <DialogTitle>Mulai Buka Tokomu</DialogTitle>
+                                                            <DialogTitle>
+                                                                Mulai Buka Tokomu
+                                                            </DialogTitle>
                                                         </DialogHeader>
                                                         <Form {...shopForm}>
-                                                            <form onSubmit={shopForm.handleSubmit(handleOpenShop)} className="space-y-4 py-4">
+                                                            <form
+                                                                onSubmit={shopForm.handleSubmit(
+                                                                    handleOpenShop,
+                                                                )}
+                                                                className="space-y-4 py-4"
+                                                            >
                                                                 <div className="grid grid-cols-2 gap-4">
-                                                                    <FormField control={shopForm.control} name="shop_name" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Shop Name</FormLabel>
-                                                                            <FormControl><Input {...field} placeholder="Name" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
-                                                                    <FormField control={shopForm.control} name="shop_type" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Shop Type</FormLabel>
-                                                                            <FormControl><Input {...field} placeholder="e.g. personal, business" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_name"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Shop Name
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="Name"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_type"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Shop Type
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="e.g. personal, business"
+                                                                                        disabled
+                                                                                        defaultValue="personal"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
                                                                 </div>
-                                                                <FormField control={shopForm.control} name="shop_description" render={({field}) => (
-                                                                    <FormItem>
-                                                                        <FormLabel>Description</FormLabel>
-                                                                        <FormControl><Textarea {...field} placeholder="Tell us about your shop" /></FormControl>
-                                                                        <FormMessage />
-                                                                    </FormItem>
-                                                                )} />
-                                                                <FormField control={shopForm.control} name="shop_address" render={({field}) => (
-                                                                    <FormItem>
-                                                                        <FormLabel>Address</FormLabel>
-                                                                        <FormControl><Textarea {...field} placeholder="Shop full address" /></FormControl>
-                                                                        <FormMessage />
-                                                                    </FormItem>
-                                                                )} />
+                                                                <FormField
+                                                                    control={shopForm.control}
+                                                                    name="shop_description"
+                                                                    render={({ field }) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>
+                                                                                Description
+                                                                            </FormLabel>
+                                                                            <FormControl>
+                                                                                <Textarea
+                                                                                    {...field}
+                                                                                    placeholder="Tell us about your shop"
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )}
+                                                                />
+                                                                <FormField
+                                                                    control={shopForm.control}
+                                                                    name="shop_address"
+                                                                    render={({ field }) => (
+                                                                        <FormItem>
+                                                                            <FormLabel>
+                                                                                Address
+                                                                            </FormLabel>
+                                                                            <FormControl>
+                                                                                <Textarea
+                                                                                    {...field}
+                                                                                    placeholder="Shop full address"
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )}
+                                                                />
                                                                 <div className="grid grid-cols-2 gap-4">
-                                                                    <FormField control={shopForm.control} name="shop_city" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>City</FormLabel>
-                                                                            <FormControl><Input {...field} placeholder="City" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
-                                                                    <FormField control={shopForm.control} name="shop_province" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Province</FormLabel>
-                                                                            <FormControl><Input {...field} placeholder="Province" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_city"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    City
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="City"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_province"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Province
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="Province"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-4">
-                                                                    <FormField control={shopForm.control} name="shop_postal_code" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Postal Code</FormLabel>
-                                                                            <FormControl><Input {...field} placeholder="Postal Code" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
-                                                                    <FormField control={shopForm.control} name="shop_country" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Country</FormLabel>
-                                                                            <FormControl><Input {...field} placeholder="Country" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_postal_code"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Postal Code
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="Postal Code"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_country"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Country
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="Country"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-4">
-                                                                    <FormField control={shopForm.control} name="shop_email" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Email (Optional)</FormLabel>
-                                                                            <FormControl><Input {...field} type="email" placeholder="Email" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
-                                                                    <FormField control={shopForm.control} name="shop_phone_number" render={({field}) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>Phone (Optional)</FormLabel>
-                                                                            <FormControl><Input {...field} type="tel" placeholder="Phone" /></FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )} />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_email"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Email (Optional)
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        type="email"
+                                                                                        placeholder="Email"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
+                                                                    <FormField
+                                                                        control={shopForm.control}
+                                                                        name="shop_phone_number"
+                                                                        render={({ field }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Phone (Optional)
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        type="tel"
+                                                                                        placeholder="Phone"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
                                                                 </div>
                                                                 <DialogFooter className="mt-6 pt-4 border-t">
-                                                                    <Button type="submit" disabled={isOpeningShop} className="bg-emerald-500 hover:bg-emerald-600">
-                                                                        {isOpeningShop ? 'Submitting...' : 'Open Shop'}
+                                                                    <Button
+                                                                        type="submit"
+                                                                        disabled={isOpeningShop}
+                                                                        className="bg-emerald-500 hover:bg-emerald-600"
+                                                                    >
+                                                                        {isOpeningShop
+                                                                            ? 'Submitting...'
+                                                                            : 'Open Shop'}
                                                                     </Button>
                                                                 </DialogFooter>
                                                             </form>
@@ -1326,12 +1480,27 @@ function ProfilePageContent() {
                                         ) : (
                                             <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-border rounded-lg bg-emerald-50/50">
                                                 <StoreIcon className="w-12 h-12 mb-4 text-emerald-500" />
-                                                <h3 className="font-semibold text-lg text-emerald-900 mb-2">You are a seller!</h3>
+                                                <h3 className="font-semibold text-lg text-emerald-900 mb-2">
+                                                    You are a seller!
+                                                </h3>
                                                 <p className="text-sm text-emerald-700 max-w-sm mb-6">
-                                                    Manage your products, orders, and shop settings from your seller dashboard.
+                                                    Manage your products, orders, and shop settings
+                                                    from your seller dashboard.
                                                 </p>
-                                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={() => window.location.href = '/dashboard'}>
-                                                    Go to Seller Dashboard
+                                                <Button
+                                                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                                                    onClick={() => {
+                                                        if (user.role_slug === 'seller') {
+                                                            router.push('/products/manage');
+                                                        } else {
+                                                            switchToSeller();
+                                                        }
+                                                    }}
+                                                    disabled={isSwitchingToSeller}
+                                                >
+                                                    {isSwitchingToSeller
+                                                        ? 'Switching...'
+                                                        : 'Go to Seller Dashboard'}
                                                 </Button>
                                             </div>
                                         )}

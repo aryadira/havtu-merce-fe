@@ -21,16 +21,19 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 import { useCart } from '../context/cart-context';
-import { useLogout } from '../lib/hooks/auth';
+import { useLogout, useSwitchToSeller, useSwitchToBuyer } from '../lib/hooks/auth/auth';
 import { useGetCarts } from '../lib/hooks/cart';
-import { useMe } from '../lib/hooks/auth';
+import { useMe } from '../lib/hooks/auth/auth';
 import { Skeleton } from './ui/skeleton';
+import { useRouter } from 'next/navigation';
+import { handleApiError } from '../lib/api-utils';
 
 export function AppHeader() {
     const { data: user, isLoading: loadUser } = useMe();
     const { data: carts, isLoading: loadCarts } = useGetCarts();
     const itemCount = carts?.cart_items?.reduce((total, item) => total + item.item_qty, 0) || 0;
 
+    const router = useRouter();
     const { mutate: logout, isPending } = useLogout({
         onSuccess: () => {
             toast.success('Logout berhasil!');
@@ -40,10 +43,32 @@ export function AppHeader() {
         },
     });
 
+    const { mutate: switchToSeller, isPending: isSwitchingToSeller } = useSwitchToSeller({
+        onSuccess: () => {
+            toast.success('Mode Seller diaktifkan!');
+            router.push('/products/manage');
+        },
+        onError: (error) => {
+            handleApiError(error);
+        },
+    });
+
+    const { mutate: switchToBuyer, isPending: isSwitchingToBuyer } = useSwitchToBuyer({
+        onSuccess: () => {
+            toast.success('Mode Buyer diaktifkan!');
+            router.push('/products/shop');
+        },
+        onError: (error) => {
+            handleApiError(error);
+        },
+    });
+
     const handleLogout = (e: React.MouseEvent) => {
         e.preventDefault();
         logout(undefined);
     };
+
+    const isPendingAction = isPending || isSwitchingToSeller || isSwitchingToBuyer;
 
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
@@ -114,12 +139,31 @@ export function AppHeader() {
                                         Settings
                                     </DropdownMenuItem>
                                 </Link>
+                                {user?.user_has_roles?.some((r: any) => r.role_slug === 'buyer') ? (
+                                    user.shop ? (
+                                        <DropdownMenuItem
+                                            className="cursor-pointer text-emerald-600 font-medium"
+                                            onClick={() => switchToSeller()}
+                                            disabled={isPendingAction}
+                                        >
+                                            {isSwitchingToSeller
+                                                ? 'Switching...'
+                                                : 'Seller Dashboard'}
+                                        </DropdownMenuItem>
+                                    ) : (
+                                        <Link href="/profile">
+                                            <DropdownMenuItem className="cursor-pointer text-emerald-600 font-medium">
+                                                Open Shop
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    )
+                                ) : null}
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={handleLogout}
-                                disabled={isPending}
-                                className="cursor-pointer"
+                                disabled={isPendingAction}
+                                className="cursor-pointer text-destructive"
                             >
                                 {isPending ? 'Logging out...' : 'Logout'}
                             </DropdownMenuItem>
